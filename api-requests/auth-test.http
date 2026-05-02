@@ -1,0 +1,35 @@
+### 1. Register a new user
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "security.test@example.com",
+  "password": "securePassword123",
+  "firstName": "Security",
+  "lastName": "User"
+}
+
+### 2. Login
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "security.test@example.com",
+  "password": "securePassword123"
+}
+
+> {%
+ client.global.set("authToken", response.body.token);
+ client.global.set("currentUserId", response.body.id);
+ %}
+
+### 3. Access Protected Profile (Authorized)
+GET http://localhost:8080/api/users/profile/{{currentUserId}}
+Authorization: Bearer {{authToken}}
+
+### 4. Access Protected Profile (Unauthorized - No Token)
+GET http://localhost:8080/api/users/profile/{{currentUserId}}
+
+### 5. Access Admin Endpoint (Should be Forbidden for CLIENT role)
+GET http://localhost:8080/api/admin/applications/pending
+Authorization: Bearer {{authToken}}

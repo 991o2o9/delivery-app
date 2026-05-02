@@ -1,0 +1,15 @@
+### 1. Admin: Dashboard Summary
+GET http://localhost:8080/api/admin/dashboard/summary
+Authorization: Bearer {{adminToken}}
+
+### 2. Admin: List All Orders (Paginated)
+GET http://localhost:8080/api/admin/orders?page=0&size=10
+Authorization: Bearer {{adminToken}}
+
+### 3. Admin: List All Couriers
+GET http://localhost:8080/api/admin/couriers
+Authorization: Bearer {{adminToken}}
+
+### 4. Admin: Block/Unblock Courier
+POST http://localhost:8080/api/admin/couriers/{{courierId}}/block
+Authorization: Bearer {{adminToken}}

@@ -1,0 +1,66 @@
+# OS Specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE Specific
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.settings/
+.classpath
+.factorypath
+.apt_generated
+.springBeans
+.sts4-cache
+/nbproject/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment & Secrets (CRITICAL)
+.env
+.env.local
+.env.*.local
+*.key
+*.jks
+*.p12
+*.pem
+
+# Java / Spring Boot (Maven)
+**/target/
+**/build/
+**/*.class
+**/*.jar
+**/*.war
+**/*.ear
+**/*.log
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+HELP.md
+
+# Node.js / React (Vite)
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/.eslintcache
+**/.vite/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Logs
+logs/
+*.log

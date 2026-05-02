@@ -1,0 +1,11 @@
+### Calculate Delivery Preview (Admin Only)
+POST http://localhost:8080/api/admin/calculate-preview
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "originLat": 40.7128,
+  "originLon": -74.0060,
+  "destLat": 40.7306,
+  "destLon": -73.9352
+}

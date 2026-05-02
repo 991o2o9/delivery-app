@@ -1,0 +1,34 @@
+### 1. Register a new user
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "courier.candidate@example.com",
+  "password": "password123",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+
+> {% client.global.set("userId", response.body.id); %}
+
+### 2. Get User Profile
+GET http://localhost:8080/api/users/profile/{{userId}}
+
+### 3. Apply for Courier Role
+POST http://localhost:8080/api/applications/apply/{{userId}}
+Content-Type: application/json
+
+{
+  "message": "I want to become a courier. I have a bike and I am very fast!"
+}
+
+> {% client.global.set("applicationId", response.body.id); %}
+
+### 4. Admin: Get Pending Applications
+GET http://localhost:8080/api/admin/applications/pending
+
+### 5. Admin: Approve Application
+POST http://localhost:8080/api/admin/applications/{{applicationId}}/approve
+
+### 6. Verify User Role Change (Should be COURIER)
+GET http://localhost:8080/api/users/profile/{{userId}}

@@ -1,0 +1,27 @@
+### 1. Create a new Order (Client)
+POST http://localhost:8080/api/orders
+Content-Type: application/json
+Authorization: Bearer {{clientToken}}
+
+{
+  "pickupAddress": "Times Square, NY",
+  "destinationAddress": "Empire State Building, NY",
+  "pickupLat": 40.7580,
+  "pickupLon": -73.9855,
+  "destLat": 40.7484,
+  "destLon": -73.9857
+}
+
+> {% client.global.set("orderId", response.body.id); %}
+
+### 2. Courier: View Available Orders
+GET http://localhost:8080/api/orders/available?lat=40.7500&lon=-73.9900
+Authorization: Bearer {{courierToken}}
+
+### 3. Courier: Accept Order
+POST http://localhost:8080/api/orders/{{orderId}}/accept
+Authorization: Bearer {{courierToken}}
+
+### 4. Get Order Details (Verify Assigned Status)
+GET http://localhost:8080/api/orders/{{orderId}}
+Authorization: Bearer {{clientToken}}
