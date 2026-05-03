@@ -6,6 +6,7 @@ export enum UserRole {
 
 export enum OrderStatus {
   CREATED = 'CREATED',
+  CONFIRMED = 'CONFIRMED',
   ASSIGNED = 'ASSIGNED',
   PICKED_UP = 'PICKED_UP',
   IN_TRANSIT = 'IN_TRANSIT',
@@ -118,6 +119,9 @@ export type OrderResponseDto = {
   destLon: number;
   pickupComment?: string;
   deliveryComment?: string;
+  description?: string;
+  senderPhone?: string;
+  receiverPhone?: string;
   clientEmail?: string;
   courierEmail?: string;
   receiverName?: string;

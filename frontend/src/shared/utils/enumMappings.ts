@@ -2,6 +2,7 @@ import { OrderStatus, CargoType, Urgency } from '../api/types';
 
 export const statusLabelMap: Record<OrderStatus, string> = {
   [OrderStatus.CREATED]: 'Created',
+  [OrderStatus.CONFIRMED]: 'Confirmed',
   [OrderStatus.ASSIGNED]: 'Assigned',
   [OrderStatus.PICKED_UP]: 'Picked Up',
   [OrderStatus.IN_TRANSIT]: 'In Transit',
@@ -11,6 +12,7 @@ export const statusLabelMap: Record<OrderStatus, string> = {
 
 export const statusColorMap: Record<OrderStatus, string> = {
   [OrderStatus.CREATED]: 'bg-blue-100 text-blue-800',
+  [OrderStatus.CONFIRMED]: 'bg-cyan-100 text-cyan-800',
   [OrderStatus.ASSIGNED]: 'bg-indigo-100 text-indigo-800',
   [OrderStatus.PICKED_UP]: 'bg-yellow-100 text-yellow-800',
   [OrderStatus.IN_TRANSIT]: 'bg-orange-100 text-orange-800',

@@ -69,7 +69,12 @@ public class OrderMapper {
         // Expanded fields
         dto.setCargoType(order.getCargoType());
         dto.setWeight(order.getWeight());
+        dto.setDescription(order.getDescription());
+        dto.setSenderPhone(order.getSenderPhone());
         dto.setReceiverName(order.getReceiverName());
+        dto.setReceiverPhone(order.getReceiverPhone());
+        dto.setPickupComment(order.getPickupComment());
+        dto.setDeliveryComment(order.getDeliveryComment());
         dto.setUrgency(order.getUrgency());
         dto.setPaymentMethod(order.getPaymentMethod());
 

@@ -17,9 +17,10 @@ export const AdminOrderTable = () => {
   const getStatusBadge = (status: OrderStatus) => {
     const colors: Record<OrderStatus, string> = {
       [OrderStatus.CREATED]: 'bg-blue-100 text-blue-700',
-      [OrderStatus.COURIER_ASSIGNED]: 'bg-indigo-100 text-indigo-700',
+      [OrderStatus.CONFIRMED]: 'bg-cyan-100 text-cyan-700',
+      [OrderStatus.ASSIGNED]: 'bg-indigo-100 text-indigo-700',
       [OrderStatus.PICKED_UP]: 'bg-yellow-100 text-yellow-700',
-      [OrderStatus.DELIVERING]: 'bg-orange-100 text-orange-700',
+      [OrderStatus.IN_TRANSIT]: 'bg-orange-100 text-orange-700',
       [OrderStatus.DELIVERED]: 'bg-green-100 text-green-700',
       [OrderStatus.CANCELLED]: 'bg-red-100 text-red-700',
     };

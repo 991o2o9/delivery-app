@@ -12,9 +12,10 @@ export const AdminStatsGrid = () => {
 
   const statusConfig: Record<OrderStatus, { label: string; color: string }> = {
     [OrderStatus.CREATED]: { label: 'Created', color: 'bg-blue-500' },
-    [OrderStatus.COURIER_ASSIGNED]: { label: 'Assigned', color: 'bg-indigo-500' },
+    [OrderStatus.CONFIRMED]: { label: 'Confirmed', color: 'bg-cyan-500' },
+    [OrderStatus.ASSIGNED]: { label: 'Assigned', color: 'bg-indigo-500' },
     [OrderStatus.PICKED_UP]: { label: 'Picked Up', color: 'bg-yellow-500' },
-    [OrderStatus.DELIVERING]: { label: 'In Transit', color: 'bg-orange-500' },
+    [OrderStatus.IN_TRANSIT]: { label: 'In Transit', color: 'bg-orange-500' },
     [OrderStatus.DELIVERED]: { label: 'Delivered', color: 'bg-green-500' },
     [OrderStatus.CANCELLED]: { label: 'Cancelled', color: 'bg-red-500' },
   };

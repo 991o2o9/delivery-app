@@ -16,11 +16,57 @@ import {
 
 const mapContainerStyle = {
   width: '100%',
-  height: '400px',
+  height: '380px',
   borderRadius: '1rem',
 };
 
 const LIBRARIES: ('places' | 'marker')[] = ['places', 'marker'];
+
+const PhoneLink = ({
+  phone,
+  color,
+}: {
+  phone: string;
+  color: 'green' | 'blue';
+}) => {
+  const styles = {
+    green: {
+      bg: 'bg-green-50',
+      border: 'border-green-200',
+      text: 'text-green-800',
+      icon: 'text-green-600',
+    },
+    blue: {
+      bg: 'bg-blue-50',
+      border: 'border-blue-200',
+      text: 'text-blue-800',
+      icon: 'text-blue-600',
+    },
+  };
+  const s = styles[color];
+
+  return (
+    <a
+      href={`tel:${phone.replace(/\s/g, '')}`}
+      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-medium transition-opacity active:opacity-70 ${s.bg} ${s.border} ${s.text}`}
+    >
+      <svg
+        width='14'
+        height='14'
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='currentColor'
+        strokeWidth='2.5'
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        className={s.icon}
+      >
+        <path d='M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.36 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z' />
+      </svg>
+      {phone}
+    </a>
+  );
+};
 
 export const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,7 +82,6 @@ export const OrderDetailPage = () => {
 
   const calculateRoute = async () => {
     if (!order) return;
-
     const directionsService = new window.google.maps.DirectionsService();
     const results = await directionsService.route({
       origin: { lat: order.pickupLat, lng: order.pickupLon },
@@ -47,168 +92,286 @@ export const OrderDetailPage = () => {
   };
 
   useEffect(() => {
-    if (isLoaded && order) {
-      calculateRoute();
-    }
+    if (isLoaded && order) calculateRoute();
   }, [isLoaded, order?.pickupLat, order?.destLat]);
 
   if (isLoading)
     return (
-      <div className='p-8 text-center animate-pulse font-black text-blue-600'>
-        LOADING SHIPMENT DATA...
+      <div className='min-h-screen flex items-center justify-center'>
+        <div className='text-center space-y-2'>
+          <div className='w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto' />
+          <p className='text-sm text-gray-400 font-medium'>
+            Loading shipment...
+          </p>
+        </div>
       </div>
     );
+
   if (isError || !order)
-    return <div className='p-8 text-center text-red-500 font-bold'>⚠️ Order not found.</div>;
+    return (
+      <div className='min-h-screen flex items-center justify-center p-8'>
+        <div className='text-center'>
+          <p className='text-red-500 font-bold text-lg'>Order not found</p>
+          <Link to='/client' className='text-sm text-blue-600 mt-2 block'>
+            ← Back to dashboard
+          </Link>
+        </div>
+      </div>
+    );
 
   const pickupPos = { lat: order.pickupLat, lng: order.pickupLon };
 
   return (
-    <div className='min-h-screen bg-gray-50 p-4 md:p-8'>
-      <div className='max-w-6xl mx-auto'>
-        <div className='mb-6 flex justify-between items-center'>
-          <Link
-            to='/client'
-            className='text-gray-500 font-bold hover:text-blue-600 flex items-center space-x-2 transition-colors'
+    <div className='min-h-screen bg-gray-50'>
+      {/* Header */}
+      <header className='bg-white border-b border-gray-100 sticky top-0 z-10 px-4 py-3 flex items-center justify-between'>
+        <Link
+          to='/client'
+          className='flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition-colors text-sm font-medium'
+        >
+          <svg
+            width='16'
+            height='16'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+            strokeLinecap='round'
+            strokeLinejoin='round'
           >
-            <span>← Back to Dashboard</span>
-          </Link>
-          <div className='text-right'>
-            <p className='text-[10px] font-black text-gray-400 uppercase tracking-widest'>Ordered on</p>
-            <p className='text-sm font-bold text-gray-700'>{dayjs(order.createdAt).format('DD MMMM YYYY')}</p>
-          </div>
+            <path d='M19 12H5M12 5l-7 7 7 7' />
+          </svg>
+          Back
+        </Link>
+        <div className='text-center'>
+          <p className='text-xs font-semibold text-gray-800 tracking-tight'>
+            #{order.id.substring(0, 8).toUpperCase()}
+          </p>
+          <p className='text-[10px] text-gray-400'>
+            {dayjs(order.createdAt).format('DD MMM YYYY')}
+          </p>
         </div>
+        <div className='w-16' />
+      </header>
 
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-          {/* Left Column: Detailed Info */}
-          <div className='lg:col-span-1 space-y-6'>
-            
-            {/* Status & ID Card */}
-            <div className='bg-white p-6 rounded-2xl shadow-sm border border-gray-100'>
-              <div className='flex justify-between items-start mb-6'>
-                <div>
-                  <h1 className='text-2xl font-black text-gray-900 tracking-tighter'>
-                    SHIPMENT #{order.id.substring(0, 8).toUpperCase()}
-                  </h1>
-                  <p className='text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-1'>
-                    Internal Tracking Active
+      <div className='max-w-6xl mx-auto p-4 md:p-6'>
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+          {/* Left column */}
+          <div className='lg:col-span-1 space-y-4'>
+            {/* Status card */}
+            <div className='bg-white rounded-2xl border border-gray-100 p-5'>
+              <div className='flex justify-between items-center mb-4'>
+                <h1 className='text-base font-bold text-gray-900'>
+                  Shipment details
+                </h1>
+                <div
+                  className={`px-3 py-1 rounded-full border text-xs font-semibold ${statusColorMap[order.status]}`}
+                >
+                  {statusLabelMap[order.status]}
+                </div>
+              </div>
+              <div className='grid grid-cols-2 gap-3'>
+                <div className='bg-gray-50 rounded-xl p-3'>
+                  <p className='text-[10px] text-gray-400 uppercase tracking-wider mb-1'>
+                    Distance
+                  </p>
+                  <p className='text-lg font-bold text-gray-800'>
+                    {order.distanceKm.toFixed(1)}{' '}
+                    <span className='text-xs font-normal text-gray-400'>
+                      km
+                    </span>
+                  </p>
+                </div>
+                <div className='bg-gray-50 rounded-xl p-3'>
+                  <p className='text-[10px] text-gray-400 uppercase tracking-wider mb-1'>
+                    Weight
+                  </p>
+                  <p className='text-lg font-bold text-gray-800'>
+                    {order.weight}{' '}
+                    <span className='text-xs font-normal text-gray-400'>
+                      kg
+                    </span>
                   </p>
                 </div>
               </div>
-              <div className={`w-full py-3 rounded-xl border flex items-center justify-center gap-2 ${statusColorMap[order.status]} shadow-sm`}>
-                <div className='w-2 h-2 rounded-full bg-current animate-pulse' />
-                <span className='text-xs font-black uppercase tracking-widest'>
-                  {statusLabelMap[order.status]}
-                </span>
-              </div>
             </div>
 
-            {/* Courier Info (Conditional) */}
+            {/* Courier card */}
             {order.courierEmail && (
-              <div className='bg-blue-600 p-6 rounded-2xl shadow-lg shadow-blue-100 text-white'>
-                <p className='text-[10px] font-black uppercase tracking-widest opacity-70 mb-3'>Your Courier</p>
-                <div className='flex items-center gap-4'>
-                  <div className='w-12 h-12 rounded-full bg-white/20 flex items-center justify-center font-black text-lg'>
+              <div className='bg-white rounded-2xl border border-gray-100 p-5'>
+                <p className='text-[10px] text-gray-400 uppercase tracking-wider mb-3'>
+                  Your courier
+                </p>
+                <div className='flex items-center gap-3'>
+                  <div className='w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm flex-shrink-0'>
                     {order.courierEmail[0].toUpperCase()}
                   </div>
-                  <div>
-                    <p className='font-bold'>{order.courierEmail}</p>
-                    <p className='text-[10px] uppercase font-black opacity-60'>Assigned to your mission</p>
+                  <div className='min-w-0'>
+                    <p className='text-sm font-semibold text-gray-800 truncate'>
+                      {order.courierEmail}
+                    </p>
+                    <p className='text-xs text-gray-400'>
+                      Assigned to your order
+                    </p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Main Details */}
-            <div className='bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-5'>
-              <div className='grid grid-cols-2 gap-4 pb-5 border-b border-gray-50'>
-                <div>
-                  <p className='text-[10px] uppercase font-black text-gray-400 tracking-wider mb-1'>Distance</p>
-                  <p className='text-lg font-black text-gray-800'>{order.distanceKm.toFixed(2)} km</p>
-                </div>
-                <div>
-                  <p className='text-[10px] uppercase font-black text-gray-400 tracking-wider mb-1'>Total Weight</p>
-                  <p className='text-lg font-black text-gray-800'>{order.weight} kg</p>
-                </div>
-              </div>
-
-              <div className='space-y-4'>
-                <div className='relative pl-6'>
-                  <div className='absolute left-0 top-1.5 w-2 h-2 rounded-full bg-green-500' />
-                  <p className='text-[10px] uppercase font-black text-gray-400 tracking-wider'>Pickup</p>
-                  <p className='text-sm text-gray-700 font-bold'>{order.pickupAddress}</p>
-                </div>
-                <div className='relative pl-6'>
-                  <div className='absolute left-0 top-1.5 w-2 h-2 rounded-full bg-blue-500' />
-                  <p className='text-[10px] uppercase font-black text-gray-400 tracking-wider'>Destination</p>
-                  <p className='text-sm text-gray-700 font-bold'>{order.destinationAddress}</p>
-                  {order.receiverName && (
-                    <p className='text-[11px] text-gray-400 font-medium mt-1 italic'>To: {order.receiverName}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className='pt-5 border-t border-gray-50 grid grid-cols-2 gap-4'>
-                <div>
-                  <p className='text-[10px] uppercase font-black text-gray-400 tracking-wider'>Cargo</p>
-                  <p className='text-sm font-bold text-gray-700'>{cargoTypeLabelMap[order.cargoType]}</p>
-                </div>
-                <div>
-                  <p className='text-[10px] uppercase font-black text-gray-400 tracking-wider'>Urgency</p>
-                  <p className='text-sm font-bold text-gray-700'>{urgencyLabelMap[order.urgency]}</p>
+            {/* Addresses card */}
+            <div className='bg-white rounded-2xl border border-gray-100 overflow-hidden'>
+              {/* Pickup */}
+              <div className='p-5 border-b border-gray-50'>
+                <div className='flex gap-3'>
+                  <div className='flex flex-col items-center pt-1'>
+                    <div className='w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0' />
+                    <div className='w-px flex-1 bg-gray-100 mt-1' />
+                  </div>
+                  <div className='flex-1 min-w-0 pb-4'>
+                    <p className='text-[10px] text-gray-400 uppercase tracking-wider mb-1'>
+                      Pickup from
+                    </p>
+                    <p className='text-sm font-semibold text-gray-800 mb-3 leading-snug'>
+                      {order.pickupAddress}
+                    </p>
+                    {order.senderPhone && (
+                      <PhoneLink phone={order.senderPhone} color='green' />
+                    )}
+                    {order.pickupComment && (
+                      <p className='mt-3 text-xs text-gray-500 italic bg-gray-50 px-3 py-2 rounded-xl border border-dashed border-gray-200 leading-relaxed'>
+                        "{order.pickupComment}"
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className='pt-5 border-t border-gray-50 flex justify-between items-end'>
+              {/* Destination */}
+              <div className='p-5'>
+                <div className='flex gap-3'>
+                  <div className='pt-1'>
+                    <div className='w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0' />
+                  </div>
+                  <div className='flex-1 min-w-0'>
+                    <p className='text-[10px] text-gray-400 uppercase tracking-wider mb-1'>
+                      Deliver to
+                    </p>
+                    <p className='text-sm font-semibold text-gray-800 mb-1 leading-snug'>
+                      {order.destinationAddress}
+                    </p>
+                    {order.receiverName && (
+                      <p className='text-xs text-gray-500 mb-3'>
+                        Recipient:{' '}
+                        <span className='font-semibold text-gray-700'>
+                          {order.receiverName}
+                        </span>
+                      </p>
+                    )}
+                    {order.receiverPhone && (
+                      <PhoneLink phone={order.receiverPhone} color='blue' />
+                    )}
+                    {order.deliveryComment && (
+                      <p className='mt-3 text-xs text-gray-500 italic bg-gray-50 px-3 py-2 rounded-xl border border-dashed border-gray-200 leading-relaxed'>
+                        "{order.deliveryComment}"
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Package info */}
+            <div className='bg-white rounded-2xl border border-gray-100 p-5 space-y-4'>
+              {order.description && (
                 <div>
-                  <p className='text-[10px] uppercase font-black text-gray-400 tracking-wider'>Paid via {order.paymentMethod}</p>
-                  <p className='text-3xl font-black text-blue-600 mt-1'>${order.price.toFixed(2)}</p>
+                  <p className='text-[10px] text-gray-400 uppercase tracking-wider mb-1.5'>
+                    Description
+                  </p>
+                  <p className='text-sm text-gray-700 leading-relaxed bg-blue-50 px-3 py-2.5 rounded-xl border border-blue-100'>
+                    {order.description}
+                  </p>
+                </div>
+              )}
+              <div className='grid grid-cols-2 gap-4 pt-1 border-t border-gray-50'>
+                <div>
+                  <p className='text-[10px] text-gray-400 uppercase tracking-wider mb-1'>
+                    Cargo type
+                  </p>
+                  <p className='text-sm font-semibold text-gray-700'>
+                    {cargoTypeLabelMap[order.cargoType]}
+                  </p>
+                </div>
+                <div>
+                  <p className='text-[10px] text-gray-400 uppercase tracking-wider mb-1'>
+                    Urgency
+                  </p>
+                  <p className='text-sm font-semibold text-orange-600'>
+                    {urgencyLabelMap[order.urgency]}
+                  </p>
+                </div>
+              </div>
+              <div className='flex justify-between items-end pt-1 border-t border-gray-50'>
+                <div>
+                  <p className='text-[10px] text-gray-400 uppercase tracking-wider mb-1'>
+                    Paid via {order.paymentMethod}
+                  </p>
+                  <p className='text-2xl font-black text-blue-600'>
+                    ${order.price.toFixed(2)}
+                  </p>
                 </div>
                 {order.estimatedArrivalTime && order.status !== 'DELIVERED' && (
                   <div className='text-right'>
-                    <p className='text-[10px] uppercase font-black text-gray-400 tracking-wider'>ETA</p>
-                    <p className='text-sm font-bold text-orange-500'>{dayjs(order.estimatedArrivalTime).format('HH:mm')}</p>
+                    <p className='text-[10px] text-gray-400 uppercase tracking-wider mb-1'>
+                      ETA
+                    </p>
+                    <p className='text-sm font-bold text-orange-500'>
+                      {dayjs(order.estimatedArrivalTime).format('HH:mm')}
+                    </p>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Timeline */}
-            <div className='bg-white p-6 rounded-2xl shadow-sm border border-gray-100'>
-              <p className='text-[10px] font-black text-gray-400 tracking-widest uppercase mb-6 text-center border-b border-gray-50 pb-4'>
-                Live Tracking Log
+            <div className='bg-white rounded-2xl border border-gray-100 p-5'>
+              <p className='text-[10px] text-gray-400 uppercase tracking-wider mb-4'>
+                Tracking log
               </p>
-
               <div className='relative'>
-                <div className='absolute left-[17px] top-2 bottom-2 w-0.5 bg-gray-50' />
-
-                <div className='flex flex-col space-y-6'>
+                <div className='absolute left-[13px] top-2 bottom-2 w-px bg-gray-100' />
+                <div className='space-y-5'>
                   {order.history?.map((entry, index) => {
                     const isFirst = index === 0;
-                    const iconColor = isFirst
-                      ? 'bg-blue-600 border-blue-100 text-white'
-                      : 'bg-white border-gray-100 text-gray-300';
-
                     return (
-                      <div key={entry.status + entry.changedAt} className='flex items-start gap-4 relative'>
-                        <div className={`w-[36px] h-[34px] rounded-full border-2 flex items-center justify-center flex-shrink-0 z-10 transition-all ${iconColor} ${isFirst ? 'shadow-lg shadow-blue-100 scale-110' : ''}`}>
-                          <svg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='3' strokeLinecap='round' strokeLinejoin='round'>
+                      <div
+                        key={entry.status + entry.changedAt}
+                        className='flex items-start gap-3 relative'
+                      >
+                        <div
+                          className={`w-7 h-7 rounded-full border flex items-center justify-center flex-shrink-0 z-10 ${isFirst ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-200'}`}
+                        >
+                          <svg
+                            width='10'
+                            height='10'
+                            viewBox='0 0 24 24'
+                            fill='none'
+                            stroke={isFirst ? 'white' : '#d1d5db'}
+                            strokeWidth='3'
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                          >
                             <polyline points='20 6 9 17 4 12' />
                           </svg>
                         </div>
-
-                        <div className='flex-1 min-w-0 pt-0.5'>
-                          <div className='flex items-center justify-between mb-1'>
-                            <span className={`text-sm font-black uppercase tracking-tight ${isFirst ? 'text-gray-900' : 'text-gray-400'}`}>
-                              {statusLabelMap[entry.status]}
-                            </span>
-                            <time className='text-[10px] font-bold text-gray-300 bg-gray-50 px-2 py-0.5 rounded'>
-                              {dayjs(entry.changedAt).format('HH:mm')}
-                            </time>
-                          </div>
-                          {isFirst && (
-                            <p className='text-[10px] text-blue-500 font-bold uppercase tracking-tighter'>Latest Activity</p>
-                          )}
+                        <div className='flex-1 min-w-0 pt-0.5 flex justify-between items-start'>
+                          <span
+                            className={`text-sm font-semibold ${isFirst ? 'text-gray-900' : 'text-gray-400'}`}
+                          >
+                            {statusLabelMap[entry.status]}
+                          </span>
+                          <time className='text-[10px] text-gray-300 bg-gray-50 px-2 py-0.5 rounded ml-2 flex-shrink-0'>
+                            {dayjs(entry.changedAt).format('HH:mm')}
+                          </time>
                         </div>
                       </div>
                     );
@@ -218,10 +381,10 @@ export const OrderDetailPage = () => {
             </div>
           </div>
 
-          {/* Right Column: Map Preview */}
+          {/* Right column: Map */}
           <div className='lg:col-span-2'>
-            <div className='sticky top-8 space-y-4'>
-              <div className='bg-white p-2 rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden'>
+            <div className='sticky top-20 space-y-4'>
+              <div className='bg-white rounded-2xl border border-gray-100 overflow-hidden'>
                 {isLoaded ? (
                   <GoogleMap
                     mapContainerStyle={mapContainerStyle}
@@ -231,47 +394,70 @@ export const OrderDetailPage = () => {
                       mapId: import.meta.env.VITE_GOOGLE_MAPS_MAP_ID,
                       disableDefaultUI: true,
                       zoomControl: true,
-                      styles: [{ featureType: "all", elementType: "labels.text.fill", stylers: [{ color: "#333333" }] }]
                     }}
                   >
                     {directionsResponse && (
-                      <DirectionsRenderer 
-                        directions={directionsResponse} 
+                      <DirectionsRenderer
+                        directions={directionsResponse}
                         options={{
-                          polylineOptions: { strokeColor: "#2563eb", strokeWeight: 5, strokeOpacity: 0.8 },
-                          markerOptions: { opacity: 0.9 }
+                          polylineOptions: {
+                            strokeColor: '#2563eb',
+                            strokeWeight: 5,
+                            strokeOpacity: 0.8,
+                          },
                         }}
                       />
                     )}
                   </GoogleMap>
                 ) : (
-                  <div className='h-[400px] flex items-center justify-center bg-gray-100 rounded-3xl animate-pulse font-black text-gray-300'>
-                    INITIALIZING REAL-TIME MAP...
+                  <div className='h-[380px] flex items-center justify-center bg-gray-50 animate-pulse'>
+                    <p className='text-sm text-gray-300 font-medium'>
+                      Loading map...
+                    </p>
                   </div>
                 )}
-                <div className='p-5 flex justify-between items-center bg-gray-50/50'>
-                  <div className='flex items-center gap-3'>
-                    <div className='flex -space-x-2'>
-                      <div className='w-6 h-6 rounded-full bg-green-500 border-2 border-white' />
-                      <div className='w-6 h-6 rounded-full bg-blue-500 border-2 border-white' />
+                <div className='px-5 py-3 flex items-center justify-between border-t border-gray-50'>
+                  <div className='flex items-center gap-2.5'>
+                    <div className='flex -space-x-1.5'>
+                      <div className='w-5 h-5 rounded-full bg-green-500 border-2 border-white' />
+                      <div className='w-5 h-5 rounded-full bg-blue-500 border-2 border-white' />
                     </div>
-                    <span className='text-[10px] font-black text-gray-500 uppercase tracking-widest'>Route established</span>
+                    <span className='text-xs text-gray-400'>
+                      Route established
+                    </span>
                   </div>
-                  <span className='text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-tighter'>
-                    Kyrgyzstan Delivery Zone
+                  <span className='text-[11px] font-medium text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full'>
+                    Kyrgyzstan
                   </span>
                 </div>
               </div>
-              
-              <div className='p-6 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between'>
-                <div className='flex items-center gap-4'>
-                  <div className='text-2xl'>🛡️</div>
+
+              <div className='bg-white rounded-2xl border border-gray-100 p-5 flex items-center justify-between gap-4'>
+                <div className='flex items-center gap-3'>
+                  <div className='w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center flex-shrink-0'>
+                    <svg
+                      width='16'
+                      height='16'
+                      viewBox='0 0 24 24'
+                      fill='none'
+                      stroke='#4338ca'
+                      strokeWidth='2'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                    >
+                      <path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' />
+                    </svg>
+                  </div>
                   <div>
-                    <p className='text-sm font-black text-indigo-900 leading-tight uppercase'>Secure Delivery</p>
-                    <p className='text-[11px] text-indigo-600 font-medium'>Your package is protected by our global insurance policy.</p>
+                    <p className='text-sm font-semibold text-gray-800'>
+                      Secure delivery
+                    </p>
+                    <p className='text-xs text-gray-400'>
+                      Protected by insurance policy
+                    </p>
                   </div>
                 </div>
-                <button className='text-[10px] font-black bg-white text-indigo-600 px-4 py-2 rounded-xl shadow-sm hover:shadow-md transition-all uppercase'>
+                <button className='text-xs font-medium text-indigo-600 bg-indigo-50 px-3 py-2 rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-colors whitespace-nowrap flex-shrink-0'>
                   Support
                 </button>
               </div>

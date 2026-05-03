@@ -142,7 +142,12 @@ export interface OrderResponseDto {
   createdAt: string; // ISO-8601
   cargoType: CargoType;
   weight: number;
+  description?: string;
+  senderPhone?: string;
   receiverName?: string;
+  receiverPhone?: string;
+  pickupComment?: string;
+  deliveryComment?: string;
   urgency: Urgency;
   paymentMethod: PaymentMethod;
   history?: StatusHistoryDto[];
@@ -204,6 +209,7 @@ export interface ErrorResponse {
 | :--- | :--- | :--- | :--- | :--- |
 | `GET` | `/api/orders/available` | `lat`, `lon` | `AvailableOrderResponseDto[]` | `COURIER` |
 | `POST` | `/api/orders/{id}/accept` | None | `OrderResponseDto` | `COURIER` |
+| `GET` | `/api/orders/courier/active` | None | `OrderResponseDto` | `COURIER` |
 | `PATCH` | `/api/orders/{id}/pickup` | None | `OrderResponseDto` | `COURIER` (assigned) |
 | `PATCH` | `/api/orders/{id}/start-transit`| None | `OrderResponseDto` | `COURIER` (assigned) |
 | `PATCH` | `/api/orders/{id}/complete` | None | `OrderResponseDto` | `COURIER` (assigned) |

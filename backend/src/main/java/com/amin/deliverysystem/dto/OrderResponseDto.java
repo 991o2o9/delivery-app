@@ -33,7 +33,12 @@ public class OrderResponseDto {
     // Expanded fields
     private CargoType cargoType;
     private Double weight;
+    private String description;
+    private String senderPhone;
     private String receiverName;
+    private String receiverPhone;
+    private String pickupComment;
+    private String deliveryComment;
     private Urgency urgency;
     private PaymentMethod paymentMethod;
 
@@ -171,12 +176,52 @@ public class OrderResponseDto {
         this.weight = weight;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getSenderPhone() {
+        return senderPhone;
+    }
+
+    public void setSenderPhone(String senderPhone) {
+        this.senderPhone = senderPhone;
+    }
+
     public String getReceiverName() {
         return receiverName;
     }
 
     public void setReceiverName(String receiverName) {
         this.receiverName = receiverName;
+    }
+
+    public String getReceiverPhone() {
+        return receiverPhone;
+    }
+
+    public void setReceiverPhone(String receiverPhone) {
+        this.receiverPhone = receiverPhone;
+    }
+
+    public String getPickupComment() {
+        return pickupComment;
+    }
+
+    public void setPickupComment(String pickupComment) {
+        this.pickupComment = pickupComment;
+    }
+
+    public String getDeliveryComment() {
+        return deliveryComment;
+    }
+
+    public void setDeliveryComment(String deliveryComment) {
+        this.deliveryComment = deliveryComment;
     }
 
     public Urgency getUrgency() {
