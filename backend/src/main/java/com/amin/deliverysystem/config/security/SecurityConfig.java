@@ -62,11 +62,11 @@ public class SecurityConfig {
                         auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/api/health").permitAll()
-                                // Explicitly permit Swagger UI and API Docs
+                                // Swagger UI and API Docs
                                 .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
                                 .requestMatchers("/swagger-resources/**", "/webjars/**").permitAll()
-                                // Role-based access
+                                // Role based access
                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/orders").hasAnyRole("CLIENT", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/orders/my").hasRole("CLIENT")

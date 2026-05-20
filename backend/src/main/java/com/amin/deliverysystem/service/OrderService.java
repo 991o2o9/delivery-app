@@ -230,7 +230,6 @@ public class OrderService {
         return dto;
     }
 
-    // Обычное чтение — без блокировки, findById достаточно
     public OrderResponseDto getOrderDetails(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
