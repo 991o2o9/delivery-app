@@ -1,7 +1,7 @@
 package com.amin.deliverysystem.service;
 
-import com.amin.deliverysystem.config.JwtUtils;
-import com.amin.deliverysystem.config.UserDetailsImpl;
+import com.amin.deliverysystem.config.security.JwtUtils;
+import com.amin.deliverysystem.config.security.UserDetailsImpl;
 import com.amin.deliverysystem.dto.JwtResponse;
 import com.amin.deliverysystem.dto.LoginRequest;
 import com.amin.deliverysystem.dto.UserRegistrationRequest;

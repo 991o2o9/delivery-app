@@ -1,8 +1,8 @@
 package com.amin.deliverysystem.dto;
 
-import com.amin.deliverysystem.model.CargoType;
-import com.amin.deliverysystem.model.PaymentMethod;
-import com.amin.deliverysystem.model.Urgency;
+import com.amin.deliverysystem.model.enums.CargoType;
+import com.amin.deliverysystem.model.enums.PaymentMethod;
+import com.amin.deliverysystem.model.enums.Urgency;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

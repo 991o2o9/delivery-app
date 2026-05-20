@@ -1,15 +1,25 @@
-import { useCurrentLocation } from '../../shared/lib/hooks/useCurrentLocation';
-import { useAvailableOrders, useCurrentActiveOrder, useAcceptOrder } from '../../entities/order/api/courierApi';
-import { ActiveOrderCard } from '../../widgets/active-order/ui/ActiveOrderCard';
+import { useNavigate } from 'react-router-dom';
+import {
+  useAcceptOrder,
+  useAvailableOrders,
+  useCurrentActiveOrder,
+} from '../../entities/order/api/courierApi';
 import { useAuthStore } from '../../entities/user/model/store';
+import { useCurrentLocation } from '../../shared/lib/hooks/useCurrentLocation';
+import { ActiveOrderCard } from '../../widgets/active-order/ui/ActiveOrderCard';
+import { AvailableOrderCard } from '../../widgets/available-order/ui/AvailableOrderCard';
 
 export const CourierPage = () => {
   const { location, error: geoError } = useCurrentLocation();
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
+  const navigate = useNavigate();
 
-  const { data: availableOrders, isLoading: isAvailableLoading } = useAvailableOrders(location?.lat, location?.lon);
-  const { data: activeOrder, isLoading: isActiveLoading } = useCurrentActiveOrder();
+  const { data: availableOrders, isLoading: isAvailableLoading } =
+    useAvailableOrders(location?.lat, location?.lon);
+  const { data: activeOrder, isLoading: isActiveLoading } =
+    useCurrentActiveOrder();
+
   const acceptMutation = useAcceptOrder();
 
   const handleAccept = async (orderId: string) => {
@@ -23,93 +33,123 @@ export const CourierPage = () => {
   const hasActiveOrder = !!activeOrder;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col pb-20">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-black text-blue-600 italic">COURIER DASHBOARD</h1>
-          <button onClick={() => logout()} className="text-sm text-red-500 font-bold">OUT</button>
+    <div className='min-h-screen bg-gray-50 flex flex-col pb-20 lg:pb-0'>
+
+      {/* ── Header ── */}
+      <header className='bg-white shadow-sm sticky top-0 z-10 border-b border-gray-100'>
+        <div className='max-w-7xl mx-auto px-4 py-4 flex justify-between items-center'>
+          <h1 className='text-xl font-black text-blue-600 italic tracking-tight'>
+            COURIER DASHBOARD
+          </h1>
+          <div className='flex items-center gap-4'>
+            {user?.name && (
+              <span className='hidden sm:block text-xs font-bold text-gray-400 uppercase tracking-wider'>
+                {user.name}
+              </span>
+            )}
+            <button
+              onClick={() => navigate('/courier/history')}
+              className='text-xs font-black text-white bg-blue-600 hover:bg-blue-700 active:scale-95 px-4 py-2 rounded-lg shadow-md transition-all duration-200'
+            >
+              HISTORY
+            </button> 
+            <button
+              onClick={() => logout()}
+              className='text-sm text-red-500 font-bold hover:text-red-600 transition-colors'
+            >
+              OUT
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 p-4 max-w-lg mx-auto w-full">
-        {geoError && (
-          <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">
-            GPS Error: {geoError}. Please enable location.
+      {/* ── GPS Error banner ── */}
+      {geoError && (
+        <div className='bg-red-100 text-red-700 px-4 py-2 text-sm font-medium text-center'>
+          GPS Error: {geoError}. Please enable location.
+        </div>
+      )}
+
+      {/* ── Main ── */}
+      <main className='flex-1 max-w-7xl mx-auto w-full px-4 py-6 lg:grid lg:grid-cols-[340px_1fr] lg:gap-6 lg:items-start'>
+
+        {/* ══ LEFT SIDEBAR (desktop) / TOP SECTION (mobile): Active Order ══ */}
+        <aside className='lg:sticky lg:top-20'>
+          {isActiveLoading ? (
+            <div className='animate-pulse bg-gray-200 h-48 rounded-2xl mb-6 lg:mb-0' />
+          ) : activeOrder ? (
+            <div className='mb-6 lg:mb-0'>
+              <p className='text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3'>
+                Active Mission
+              </p>
+              <ActiveOrderCard order={activeOrder} />
+            </div>
+          ) : (
+            /* Empty state for sidebar on desktop */
+            <div className='hidden lg:flex flex-col items-center justify-center bg-white rounded-2xl border border-dashed border-gray-200 p-8 text-center'>
+              <div className='w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3 text-xl'>
+                📦
+              </div>
+              <p className='text-sm font-bold text-gray-400'>No active order</p>
+              <p className='text-xs text-gray-300 mt-1'>
+                Accept an order to start
+              </p>
+            </div>
+          )}
+        </aside>
+
+        {/* ══ RIGHT / MAIN: Available Orders ══ */}
+        <section className='space-y-4'>
+          <div className='flex items-center justify-between'>
+            <h2 className='text-lg font-bold text-gray-800 flex items-center gap-2'>
+              Available Nearby
+              <span className='px-2 py-0.5 bg-gray-200 rounded-full text-xs font-black'>
+                {availableOrders?.length || 0}
+              </span>
+            </h2>
+            {location && (
+              <span className='text-[10px] font-black text-green-500 uppercase tracking-wider flex items-center gap-1'>
+                <span className='w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block' />
+                GPS Active
+              </span>
+            )}
           </div>
-        )}
-
-        {/* Active Order Section */}
-        {isActiveLoading ? (
-          <div className="animate-pulse bg-gray-200 h-48 rounded-xl mb-8" />
-        ) : activeOrder ? (
-          <ActiveOrderCard order={activeOrder} />
-        ) : null}
-
-        {/* Available Orders Section */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-gray-800 flex items-center">
-            Available Nearby 
-            <span className="ml-2 px-2 py-0.5 bg-gray-200 rounded-full text-xs">
-              {availableOrders?.length || 0}
-            </span>
-          </h2>
 
           {isAvailableLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-xl" />
+            <div className='space-y-4'>
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className='animate-pulse bg-gray-200 h-32 rounded-2xl'
+                />
               ))}
             </div>
           ) : (
-            availableOrders?.map((order) => (
-              <div key={order.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-blue-500">{order.cargoType}</span>
-                  <span className="text-xs font-mono text-gray-400">#{order.id.substring(0, 6)}</span>
-                </div>
-                
-                <div className="text-sm">
-                  <div className="flex items-start">
-                    <div className="w-2 h-2 mt-1.5 rounded-full bg-green-500 mr-2 shrink-0" />
-                    <p className="text-gray-700 truncate">{order.pickupAddress}</p>
-                  </div>
-                  <div className="w-0.5 h-3 bg-gray-200 ml-0.75 my-0.5" />
-                  <div className="flex items-start">
-                    <div className="w-2 h-2 mt-1.5 rounded-full bg-red-500 mr-2 shrink-0" />
-                    <p className="text-gray-700 truncate">{order.destinationAddress}</p>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-end pt-2 border-t border-gray-50">
-                  <div>
-                    <p className="text-xs text-gray-400">Distance</p>
-                    <p className="font-bold text-gray-800">{order.distanceFromYou.toFixed(1)} km</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-400">Payout</p>
-                    <p className="font-bold text-green-600">${order.price.toFixed(2)}</p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => handleAccept(order.id)}
+            <div className='space-y-4'>
+              {availableOrders?.map((order) => (
+                <AvailableOrderCard
+                  key={order.id}
+                  order={order}
+                  onAccept={handleAccept}
                   disabled={hasActiveOrder || acceptMutation.isPending}
-                  className="w-full py-3 bg-gray-900 text-white font-bold rounded-lg text-sm disabled:bg-gray-200 disabled:text-gray-400"
-                >
-                  {hasActiveOrder ? 'Finish active order first' : 'Accept Order'}
-                </button>
-              </div>
-            ))
+                  acceptText={
+                    hasActiveOrder
+                      ? 'Finish active order first'
+                      : 'Accept Order'
+                  }
+                />
+              ))}
+            </div>
           )}
 
           {!isAvailableLoading && availableOrders?.length === 0 && (
-            <div className="text-center py-12 text-gray-400">
-              <p>No orders nearby.</p>
-              <p className="text-xs">Try moving to a busier area!</p>
+            <div className='text-center py-16 text-gray-400'>
+              <p className='text-2xl mb-2'>🗺️</p>
+              <p className='font-bold'>No orders nearby.</p>
+              <p className='text-xs mt-1'>Try moving to a busier area!</p>
             </div>
           )}
-        </div>
+        </section>
       </main>
     </div>
   );

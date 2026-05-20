@@ -3,7 +3,10 @@ package com.amin.deliverysystem.controller;
 import com.amin.deliverysystem.dto.CalculationResultDto;
 import com.amin.deliverysystem.dto.DistanceResponseDto;
 import com.amin.deliverysystem.service.GoogleMapsService;
-import com.amin.deliverysystem.service.PriceCalculationService;
+import com.amin.deliverysystem.service.PricingService;
+import com.amin.deliverysystem.dto.PreviewRequestDto;
+import jakarta.validation.Valid;
+import com.amin.deliverysystem.model.enums.Urgency;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,26 +23,23 @@ import java.util.Map;
 public class InternalToolsController {
 
     private final GoogleMapsService googleMapsService;
-    private final PriceCalculationService priceCalculationService;
+    private final PricingService pricingService;
 
-    public InternalToolsController(GoogleMapsService googleMapsService, PriceCalculationService priceCalculationService) {
+    public InternalToolsController(GoogleMapsService googleMapsService, PricingService pricingService) {
         this.googleMapsService = googleMapsService;
-        this.priceCalculationService = priceCalculationService;
+        this.pricingService = pricingService;
     }
 
     @Operation(summary = "Preview delivery price and arrival time", description = "Admin only tool for testing logic")
     @PostMapping("/calculate-preview")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CalculationResultDto> calculatePreview(@RequestBody Map<String, Double> coordinates) {
-        Double originLat = coordinates.get("originLat");
-        Double originLon = coordinates.get("originLon");
-        Double destLat = coordinates.get("destLat");
-        Double destLon = coordinates.get("destLon");
-
-        DistanceResponseDto distanceResponse = googleMapsService.getDistanceAndDuration(originLat, originLon, destLat, destLon);
+    public ResponseEntity<CalculationResultDto> calculatePreview(@Valid @RequestBody PreviewRequestDto request) {
+        DistanceResponseDto distanceResponse = googleMapsService.getDistanceAndDuration(
+                request.originLat(), request.originLon(), request.destLat(), request.destLon()
+        );
         
-        Double price = priceCalculationService.calculatePrice(distanceResponse.getDistanceKm());
-        var arrivalTime = priceCalculationService.calculateEstimatedArrivalTime(distanceResponse.getDurationMinutes());
+        Double price = pricingService.calculatePrice(distanceResponse.getDistanceKm(), 1.0, Urgency.STANDARD);
+        var arrivalTime = pricingService.calculateEstimatedArrivalTime(distanceResponse.getDurationMinutes());
 
         CalculationResultDto result = new CalculationResultDto(
                 distanceResponse.getDistanceKm(),

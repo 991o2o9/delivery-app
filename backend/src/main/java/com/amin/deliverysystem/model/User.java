@@ -2,6 +2,7 @@ package com.amin.deliverysystem.model;
 
 import jakarta.persistence.*;
 import java.util.UUID;
+import com.amin.deliverysystem.model.enums.UserRole;
 
 @Entity
 @Table(name = "users")

@@ -10,6 +10,7 @@ import { ApplicationsPage } from '../../../pages/admin/ApplicationsPage';
 import { OrderDetailPage } from '../../../pages/client/OrderDetailPage';
 import { CreateOrderPage } from '../../../pages/client/CreateOrderPage';
 import { ActiveOrderPage } from '../../../pages/courier/ActiveOrderPage';
+import { CourierHistoryPage } from '../../../pages/courier/CourierHistoryPage';
 import { ProtectedRoute } from './ProtectedRoute';
 import { UserRole } from '../../../shared/api/types';
 
@@ -67,6 +68,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={[UserRole.COURIER]}>
             <ActiveOrderPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'history',
+        element: (
+          <ProtectedRoute allowedRoles={[UserRole.COURIER]}>
+            <CourierHistoryPage />
           </ProtectedRoute>
         ),
       }

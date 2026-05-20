@@ -1,6 +1,6 @@
 package com.amin.deliverysystem.dto;
 
-import com.amin.deliverysystem.model.UserRole;
+import com.amin.deliverysystem.model.enums.UserRole;
 import java.util.UUID;
 
 public class UserResponseDto {

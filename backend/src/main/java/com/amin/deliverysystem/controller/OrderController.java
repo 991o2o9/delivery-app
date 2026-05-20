@@ -1,10 +1,10 @@
 package com.amin.deliverysystem.controller;
 
-import com.amin.deliverysystem.config.UserDetailsImpl;
+import com.amin.deliverysystem.config.security.UserDetailsImpl;
 import com.amin.deliverysystem.dto.AvailableOrderResponseDto;
 import com.amin.deliverysystem.dto.OrderRequestDto;
 import com.amin.deliverysystem.dto.OrderResponseDto;
-import com.amin.deliverysystem.model.OrderStatus;
+import com.amin.deliverysystem.model.enums.OrderStatus;
 import com.amin.deliverysystem.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,7 +13,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +40,7 @@ public class OrderController {
     @PreAuthorize("hasAnyRole('CLIENT', 'ADMIN')")
     public ResponseEntity<OrderResponseDto> createOrder(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                        @Valid @RequestBody OrderRequestDto request) {
-        return ResponseEntity.ok(orderService.createOrder(userDetails.getId(), request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(userDetails.getId(), request));
     }
 
     @Operation(summary = "Get order details by ID")
@@ -54,7 +56,7 @@ public class OrderController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(orderService.getMyOrders(userDetails.getId(), PageRequest.of(page, size)));
+        return ResponseEntity.ok(orderService.getMyOrders(userDetails.getId(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))));
     }
 
     @Operation(summary = "List available orders for couriers", description = "Sorted by proximity to courier's coordinates")
@@ -97,5 +99,15 @@ public class OrderController {
     @PreAuthorize("hasRole('COURIER')")
     public ResponseEntity<OrderResponseDto> completeDelivery(@PathVariable UUID id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(orderService.updateOrderStatus(id, OrderStatus.DELIVERED, userDetails.getId()));
+    }
+
+    @Operation(summary = "List courier's past orders (Paginated)")
+    @GetMapping("/courier/history")
+    @PreAuthorize("hasRole('COURIER')")
+    public ResponseEntity<Page<OrderResponseDto>> getCourierHistory(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(orderService.getCourierOrderHistory(userDetails.getId(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))));
     }
 }

@@ -3,7 +3,7 @@ package com.amin.deliverysystem.mapper;
 import com.amin.deliverysystem.dto.UserRegistrationRequest;
 import com.amin.deliverysystem.dto.UserResponseDto;
 import com.amin.deliverysystem.model.User;
-import com.amin.deliverysystem.model.UserRole;
+import com.amin.deliverysystem.model.enums.UserRole;
 
 public class UserMapper {
 

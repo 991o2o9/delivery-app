@@ -1,4 +1,4 @@
-package com.amin.deliverysystem.config;
+package com.amin.deliverysystem.config.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -37,8 +37,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            logger.warn("JWT token is expired: " + e.getMessage());
+        } catch (io.jsonwebtoken.JwtException e) {
+            logger.error("Invalid JWT token: " + e.getMessage());
         } catch (Exception e) {
-            // Log error
+            logger.error("Cannot set user authentication: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);

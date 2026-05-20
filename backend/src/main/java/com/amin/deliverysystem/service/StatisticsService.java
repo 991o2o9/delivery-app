@@ -1,11 +1,12 @@
 package com.amin.deliverysystem.service;
 
 import com.amin.deliverysystem.dto.DashboardStatsDto;
-import com.amin.deliverysystem.model.OrderStatus;
-import com.amin.deliverysystem.model.UserRole;
+import com.amin.deliverysystem.model.enums.OrderStatus;
+import com.amin.deliverysystem.model.enums.UserRole;
 import com.amin.deliverysystem.repository.OrderRepository;
 import com.amin.deliverysystem.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.HashMap;
 import java.util.List;

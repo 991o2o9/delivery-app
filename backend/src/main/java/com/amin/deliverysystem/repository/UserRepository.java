@@ -1,7 +1,7 @@
 package com.amin.deliverysystem.repository;
 
 import com.amin.deliverysystem.model.User;
-import com.amin.deliverysystem.model.UserRole;
+import com.amin.deliverysystem.model.enums.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../../shared/api/base';
-import type { AvailableOrderResponseDto, OrderResponseDto } from '../../../shared/api/types';
+import type { AvailableOrderResponseDto, OrderResponseDto, Page } from '../../../shared/api/types';
 
 export const useAvailableOrders = (lat: number | undefined, lon: number | undefined) => {
   return useQuery({
@@ -69,6 +69,18 @@ export const useCompleteOrder = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+};
+
+export const useCourierHistory = (page: number, size: number) => {
+  return useQuery({
+    queryKey: ['orders', 'courier', 'history', page, size],
+    queryFn: async () => {
+      const response = await api.get<Page<OrderResponseDto>>('/api/orders/courier/history', {
+        params: { page, size },
+      });
+      return response.data;
     },
   });
 };

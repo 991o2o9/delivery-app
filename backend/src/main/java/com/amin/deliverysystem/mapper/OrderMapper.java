@@ -6,7 +6,7 @@ import com.amin.deliverysystem.dto.OrderResponseDto;
 import com.amin.deliverysystem.dto.StatusHistoryDto;
 import com.amin.deliverysystem.model.DeliveryStatusHistory;
 import com.amin.deliverysystem.model.Order;
-import com.amin.deliverysystem.model.OrderStatus;
+import com.amin.deliverysystem.model.enums.OrderStatus;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

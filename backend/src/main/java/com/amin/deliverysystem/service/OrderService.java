@@ -10,7 +10,7 @@ import com.amin.deliverysystem.exception.ResourceNotFoundException;
 import com.amin.deliverysystem.mapper.OrderMapper;
 import com.amin.deliverysystem.model.DeliveryStatusHistory;
 import com.amin.deliverysystem.model.Order;
-import com.amin.deliverysystem.model.OrderStatus;
+import com.amin.deliverysystem.model.enums.OrderStatus;
 import com.amin.deliverysystem.model.User;
 import com.amin.deliverysystem.repository.DeliveryStatusHistoryRepository;
 import com.amin.deliverysystem.repository.OrderRepository;
@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
+
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     private final OrderRepository orderRepository;
@@ -39,25 +40,22 @@ public class OrderService {
     private final DeliveryStatusHistoryRepository historyRepository;
     private final GoogleMapsService googleMapsService;
     private final PricingService pricingService;
-    private final PriceCalculationService arrivalTimeService;
 
     private static final List<OrderStatus> ACTIVE_STATUSES = Arrays.asList(
-            OrderStatus.ASSIGNED, 
-            OrderStatus.PICKED_UP, 
+            OrderStatus.ASSIGNED,
+            OrderStatus.PICKED_UP,
             OrderStatus.IN_TRANSIT
     );
 
     public OrderService(OrderRepository orderRepository, UserRepository userRepository,
                         DeliveryStatusHistoryRepository historyRepository,
                         GoogleMapsService googleMapsService,
-                        PricingService pricingService,
-                        PriceCalculationService arrivalTimeService) {
+                        PricingService pricingService) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.historyRepository = historyRepository;
         this.googleMapsService = googleMapsService;
         this.pricingService = pricingService;
-        this.arrivalTimeService = arrivalTimeService;
     }
 
     @Transactional
@@ -74,17 +72,18 @@ public class OrderService {
         Order order = OrderMapper.toEntity(request);
         order.setClient(client);
         order.setDistanceKm(distanceResponse.getDistanceKm());
-        
+
         Double calculatedPrice = pricingService.calculatePrice(
-                distanceResponse.getDistanceKm(), 
-                order.getWeight(), 
+                distanceResponse.getDistanceKm(),
+                order.getWeight(),
                 order.getUrgency()
         );
         order.setPrice(calculatedPrice);
-        order.setEstimatedArrivalTime(arrivalTimeService.calculateEstimatedArrivalTime(distanceResponse.getDurationMinutes()));
-        
-        Order savedOrder = orderRepository.save(order);
+        order.setEstimatedArrivalTime(
+                pricingService.calculateEstimatedArrivalTime(distanceResponse.getDurationMinutes())
+        );
 
+        Order savedOrder = orderRepository.save(order);
         historyRepository.save(new DeliveryStatusHistory(savedOrder, OrderStatus.CREATED, LocalDateTime.now()));
         logger.info("Order created with ID: {}", savedOrder.getId());
 
@@ -96,7 +95,10 @@ public class OrderService {
 
         return availableOrders.stream()
                 .map(order -> {
-                    Double distance = calculateHaversineDistance(courierLat, courierLon, order.getPickupLat(), order.getPickupLon());
+                    Double distance = calculateHaversineDistance(
+                            courierLat, courierLon,
+                            order.getPickupLat(), order.getPickupLon()
+                    );
                     return OrderMapper.toAvailableDto(order, distance);
                 })
                 .sorted(Comparator.comparing(AvailableOrderResponseDto::getDistanceFromYou))
@@ -111,11 +113,12 @@ public class OrderService {
             throw new CourierAlreadyHasActiveOrderException("You already have an active delivery in progress.");
         }
 
-        Order order = orderRepository.findById(orderId)
+        // Pessimistic lock — защита от race condition когда два курьера принимают один заказ
+        Order order = orderRepository.findByIdForUpdate(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if (order.getStatus() != OrderStatus.CREATED) {
-            throw new RuntimeException("Order is no longer available for acceptance");
+            throw new IllegalStatusTransitionException("Order is no longer available for acceptance.");
         }
 
         User courier = userRepository.findById(courierId)
@@ -123,7 +126,7 @@ public class OrderService {
 
         order.setCourier(courier);
         order.setStatus(OrderStatus.ASSIGNED);
-        
+
         Order savedOrder = orderRepository.save(order);
         historyRepository.save(new DeliveryStatusHistory(savedOrder, OrderStatus.ASSIGNED, LocalDateTime.now()));
         logger.info("Order {} accepted by courier {}", orderId, courierId);
@@ -134,7 +137,9 @@ public class OrderService {
     @Transactional
     public OrderResponseDto updateOrderStatus(UUID orderId, OrderStatus newStatus, UUID currentUserId) {
         logger.info("Updating order {} status to {} by user {}", orderId, newStatus, currentUserId);
-        Order order = orderRepository.findById(orderId)
+
+        // Pessimistic lock — защита от одновременного изменения статуса
+        Order order = orderRepository.findByIdForUpdate(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if (order.getCourier() == null || !order.getCourier().getId().equals(currentUserId)) {
@@ -145,9 +150,8 @@ public class OrderService {
 
         order.setStatus(newStatus);
         Order savedOrder = orderRepository.save(order);
-        
         historyRepository.save(new DeliveryStatusHistory(savedOrder, newStatus, LocalDateTime.now()));
-        
+
         List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(savedOrder);
         return OrderMapper.toDto(savedOrder, history);
     }
@@ -156,9 +160,36 @@ public class OrderService {
         logger.info("Fetching active order for courier: {}", courierId);
         Order order = orderRepository.findFirstByCourierIdAndStatusInOrderByCreatedAtDesc(courierId, ACTIVE_STATUSES)
                 .orElseThrow(() -> new ResourceNotFoundException("No active order found for this courier."));
-        
+
         List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(order);
         return OrderMapper.toDto(order, history);
+    }
+
+    // Обычное чтение — без блокировки, findById достаточно
+    public OrderResponseDto getOrderDetails(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(order);
+        return OrderMapper.toDto(order, history);
+    }
+
+    public Page<OrderResponseDto> getMyOrders(UUID clientId, Pageable pageable) {
+        return orderRepository.findByClientId(clientId, pageable)
+                .map(order -> {
+                    List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(order);
+                    return OrderMapper.toDto(order, history);
+                });
+    }
+
+    public Page<OrderResponseDto> getCourierOrderHistory(UUID courierId, Pageable pageable) {
+        return orderRepository.findByCourierIdAndStatusIn(
+                courierId,
+                Arrays.asList(OrderStatus.DELIVERED, OrderStatus.CANCELLED),
+                pageable
+        ).map(order -> {
+            List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(order);
+            return OrderMapper.toDto(order, history);
+        });
     }
 
     private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
@@ -172,12 +203,14 @@ public class OrderService {
 
         if (!valid) {
             logger.warn("Invalid status transition from {} to {}", currentStatus, newStatus);
-            throw new IllegalStatusTransitionException("You cannot transition from " + currentStatus + " to " + newStatus);
+            throw new IllegalStatusTransitionException(
+                    "You cannot transition from " + currentStatus + " to " + newStatus
+            );
         }
     }
 
     private double calculateHaversineDistance(double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371; // Earth radius in km
+        final int R = 6371;
         double latDistance = Math.toRadians(lat2 - lat1);
         double lonDistance = Math.toRadians(lon2 - lon1);
         double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
@@ -185,22 +218,5 @@ public class OrderService {
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
-    }
-
-    public OrderResponseDto getOrderDetails(UUID orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-        List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(order);
-        return OrderMapper.toDto(order, history);
-    }
-
-    public Page<OrderResponseDto> getMyOrders(UUID clientId, Pageable pageable) {
-        User client = userRepository.findById(clientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Client not found"));
-        return orderRepository.findByClient(client, pageable)
-                .map(order -> {
-                    List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(order);
-                    return OrderMapper.toDto(order, history);
-                });
     }
 }

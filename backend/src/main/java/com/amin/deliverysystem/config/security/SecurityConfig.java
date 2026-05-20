@@ -1,4 +1,4 @@
-package com.amin.deliverysystem.config;
+package com.amin.deliverysystem.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

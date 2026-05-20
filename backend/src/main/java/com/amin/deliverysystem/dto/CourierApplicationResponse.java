@@ -1,6 +1,6 @@
 package com.amin.deliverysystem.dto;
 
-import com.amin.deliverysystem.model.ApplicationStatus;
+import com.amin.deliverysystem.model.enums.ApplicationStatus;
 import java.time.LocalDateTime;
 
 public class CourierApplicationResponse {

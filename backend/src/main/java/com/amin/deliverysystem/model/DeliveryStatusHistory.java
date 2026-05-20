@@ -2,6 +2,7 @@ package com.amin.deliverysystem.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.amin.deliverysystem.model.enums.OrderStatus;
 
 @Entity
 @Table(name = "delivery_status_history")

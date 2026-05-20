@@ -47,26 +47,8 @@ export const ClientPage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <OrderList />
-          </div>
-
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-800 mb-4">Quick Stats</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Active Orders</span>
-                  <span className="font-bold">0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Total Spent</span>
-                  <span className="font-bold">$0.00</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="w-full">
+          <OrderList />
         </div>
       </main>
 

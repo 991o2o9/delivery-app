@@ -4,7 +4,7 @@ import com.amin.deliverysystem.dto.CourierApplicationRequest;
 import com.amin.deliverysystem.dto.CourierApplicationResponse;
 import com.amin.deliverysystem.exception.ResourceNotFoundException;
 import com.amin.deliverysystem.mapper.ApplicationMapper;
-import com.amin.deliverysystem.model.ApplicationStatus;
+import com.amin.deliverysystem.model.enums.ApplicationStatus;
 import com.amin.deliverysystem.model.CourierApplication;
 import com.amin.deliverysystem.model.User;
 import com.amin.deliverysystem.repository.CourierApplicationRepository;

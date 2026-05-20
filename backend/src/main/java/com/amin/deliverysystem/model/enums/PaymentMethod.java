@@ -1,4 +1,4 @@
-package com.amin.deliverysystem.model;
+package com.amin.deliverysystem.model.enums;
 
 public enum PaymentMethod {
     CASH, CARD

@@ -3,6 +3,10 @@ package com.amin.deliverysystem.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import com.amin.deliverysystem.model.enums.CargoType;
+import com.amin.deliverysystem.model.enums.OrderStatus;
+import com.amin.deliverysystem.model.enums.PaymentMethod;
+import com.amin.deliverysystem.model.enums.Urgency;
 
 @Entity
 @Table(name = "orders")

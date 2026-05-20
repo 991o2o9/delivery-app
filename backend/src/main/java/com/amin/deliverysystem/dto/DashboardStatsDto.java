@@ -1,6 +1,6 @@
 package com.amin.deliverysystem.dto;
 
-import com.amin.deliverysystem.model.OrderStatus;
+import com.amin.deliverysystem.model.enums.OrderStatus;
 import java.util.Map;
 
 public class DashboardStatsDto {

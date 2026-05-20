@@ -1,4 +1,4 @@
-package com.amin.deliverysystem.config;
+package com.amin.deliverysystem.config.security;
 
 import com.amin.deliverysystem.model.User;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,6 +1,6 @@
 package com.amin.deliverysystem.controller;
 
-import com.amin.deliverysystem.config.UserDetailsImpl;
+import com.amin.deliverysystem.config.security.UserDetailsImpl;
 import com.amin.deliverysystem.dto.UserProfileUpdateDto;
 import com.amin.deliverysystem.dto.UserResponseDto;
 import com.amin.deliverysystem.service.UserService;

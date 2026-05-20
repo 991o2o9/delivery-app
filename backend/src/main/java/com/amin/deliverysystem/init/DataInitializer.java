@@ -1,7 +1,7 @@
-package com.amin.deliverysystem.config;
+package com.amin.deliverysystem.init;
 
 import com.amin.deliverysystem.model.User;
-import com.amin.deliverysystem.model.UserRole;
+import com.amin.deliverysystem.model.enums.UserRole;
 import com.amin.deliverysystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;

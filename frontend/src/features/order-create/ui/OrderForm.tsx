@@ -36,6 +36,36 @@ interface OrderFormProps {
 const BISHKEK_CENTER = { lat: 42.8746, lng: 74.5698 };
 const LIBRARIES: ("places" | "marker")[] = ["places", "marker"];
 
+const formatPhoneNumber = (value: string) => {
+  if (!value) return value;
+  let val = value.replace(/[^\d+]/g, '');
+  
+  if (val.length > 0 && !val.startsWith('+')) {
+    val = '+' + val;
+  }
+
+  if (val.startsWith('+996')) {
+    const digits = val.replace(/\D/g, '').substring(3, 12);
+    let res = '+996';
+    if (digits.length > 0) res += ` (${digits.substring(0, 3)}`;
+    if (digits.length >= 4) res += `) ${digits.substring(3, 6)}`;
+    if (digits.length >= 7) res += `-${digits.substring(6, 9)}`;
+    return res;
+  }
+
+  if (val.startsWith('+7')) {
+    const digits = val.replace(/\D/g, '').substring(1, 11);
+    let res = '+7';
+    if (digits.length > 0) res += ` (${digits.substring(0, 3)}`;
+    if (digits.length >= 4) res += `) ${digits.substring(3, 6)}`;
+    if (digits.length >= 7) res += `-${digits.substring(6, 8)}`;
+    if (digits.length >= 9) res += `-${digits.substring(8, 10)}`;
+    return res;
+  }
+
+  return val;
+};
+
 export const OrderForm = ({ onSuccess, onCancel }: OrderFormProps) => {
   const createOrder = useCreateOrder();
   const { isLoaded } = useJsApiLoader({
@@ -249,9 +279,13 @@ export const OrderForm = ({ onSuccess, onCancel }: OrderFormProps) => {
                 <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Your Phone (Sender)</label>
                 <input
                   type="tel"
-                  {...register('senderPhone')}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none"
-                  placeholder="+996 --- --- ---"
+                  {...register('senderPhone', {
+                    onChange: (e) => {
+                      e.target.value = formatPhoneNumber(e.target.value);
+                    }
+                  })}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  placeholder="+996 (___) ___-___"
                 />
                 {errors.senderPhone && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.senderPhone.message}</p>}
               </div>
@@ -270,9 +304,13 @@ export const OrderForm = ({ onSuccess, onCancel }: OrderFormProps) => {
                   <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Receiver Phone</label>
                   <input
                     type="tel"
-                    {...register('receiverPhone')}
-                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none"
-                    placeholder="+996 --- --- ---"
+                    {...register('receiverPhone', {
+                      onChange: (e) => {
+                        e.target.value = formatPhoneNumber(e.target.value);
+                      }
+                    })}
+                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    placeholder="+996 (___) ___-___"
                   />
                   {errors.receiverPhone && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.receiverPhone.message}</p>}
                 </div>
@@ -316,19 +354,19 @@ export const OrderForm = ({ onSuccess, onCancel }: OrderFormProps) => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Pickup Comment</label>
-                <input
-                  type="text"
+                <textarea
                   {...register('pickupComment')}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                  rows={2}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y"
                   placeholder="E.g. Door code 123"
                 />
               </div>
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Delivery Comment</label>
-                <input
-                  type="text"
+                <textarea
                   {...register('deliveryComment')}
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                  rows={2}
+                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y"
                   placeholder="E.g. Leave at reception"
                 />
               </div>
