@@ -5,8 +5,9 @@ import {
 } from '@react-google-maps/api';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { useOrderDetails } from '../../entities/order/api/orderApi';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useOrderDetails, useCancelOrderClient } from '../../entities/order/api/orderApi';
+import { OrderStatus } from '../../shared/api/types';
 import {
   cargoTypeLabelMap,
   statusColorMap,
@@ -70,7 +71,18 @@ const PhoneLink = ({
 
 export const OrderDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data: order, isLoading, isError } = useOrderDetails(id);
+  const cancelMutation = useCancelOrderClient();
+
+  const handleCancel = async () => {
+    try {
+      await cancelMutation.mutateAsync(id!);
+      navigate('/client');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to cancel order.');
+    }
+  };
   const [directionsResponse, setDirectionsResponse] =
     useState<google.maps.DirectionsResult | null>(null);
 
@@ -170,7 +182,18 @@ export const OrderDetailPage = () => {
                   {statusLabelMap[order.status]}
                 </div>
               </div>
-              <div className='grid grid-cols-2 gap-3'>
+              
+              {(order.status === OrderStatus.CREATED || order.status === OrderStatus.ASSIGNED) && (
+                <button
+                  onClick={handleCancel}
+                  disabled={cancelMutation.isPending}
+                  className='w-full mt-4 h-12 rounded-xl font-bold text-sm text-red-500 border border-red-200 hover:bg-red-50 transition-colors flex items-center justify-center'
+                >
+                  {cancelMutation.isPending ? 'CANCELLING...' : 'CANCEL ORDER'}
+                </button>
+              )}
+
+              <div className='grid grid-cols-2 gap-3 mt-4'>
                 <div className='bg-gray-50 rounded-xl p-3'>
                   <p className='text-[10px] text-gray-400 uppercase tracking-wider mb-1'>
                     Distance

@@ -156,10 +156,67 @@ public class OrderService {
         return OrderMapper.toDto(savedOrder, history);
     }
 
+    @Transactional
+    public OrderResponseDto cancelOrderByCourier(UUID orderId, UUID courierId) {
+        logger.info("Courier {} cancelling order {}", courierId, orderId);
+
+        Order order = orderRepository.findByIdForUpdate(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        if (order.getCourier() == null || !order.getCourier().getId().equals(courierId)) {
+            throw new AccessDeniedException("You are not the assigned courier for this order.");
+        }
+
+        if (order.getStatus() != OrderStatus.ASSIGNED) {
+            throw new IllegalStatusTransitionException("You can only cancel an order if it has not been picked up yet.");
+        }
+
+        order.setCourier(null);
+        order.setStatus(OrderStatus.CREATED);
+        
+        Order savedOrder = orderRepository.save(order);
+        historyRepository.save(new DeliveryStatusHistory(savedOrder, OrderStatus.CREATED, LocalDateTime.now()));
+        
+        logger.info("Order {} cancelled by courier {}, returning to active pool", orderId, courierId);
+
+        List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(savedOrder);
+        return OrderMapper.toDto(savedOrder, history);
+    }
+
+    @Transactional
+    public OrderResponseDto cancelOrderByClient(UUID orderId, UUID clientId) {
+        logger.info("Client {} cancelling order {}", clientId, orderId);
+
+        Order order = orderRepository.findByIdForUpdate(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        if (!order.getClient().getId().equals(clientId)) {
+            throw new AccessDeniedException("You are not the owner of this order.");
+        }
+
+        if (order.getStatus() != OrderStatus.CREATED && order.getStatus() != OrderStatus.ASSIGNED) {
+            throw new IllegalStatusTransitionException("You can only cancel an order before it has been picked up.");
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        
+        Order savedOrder = orderRepository.save(order);
+        historyRepository.save(new DeliveryStatusHistory(savedOrder, OrderStatus.CANCELLED, LocalDateTime.now()));
+
+        logger.info("Order {} cancelled by client {}", orderId, clientId);
+
+        List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(savedOrder);
+        return OrderMapper.toDto(savedOrder, history);
+    }
+
     public OrderResponseDto getActiveCourierOrder(UUID courierId) {
         logger.info("Fetching active order for courier: {}", courierId);
         Order order = orderRepository.findFirstByCourierIdAndStatusInOrderByCreatedAtDesc(courierId, ACTIVE_STATUSES)
-                .orElseThrow(() -> new ResourceNotFoundException("No active order found for this courier."));
+                .orElse(null);
+
+        if (order == null) {
+            return null;
+        }
 
         List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(order);
         return OrderMapper.toDto(order, history);

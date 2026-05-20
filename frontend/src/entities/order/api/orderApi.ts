@@ -78,3 +78,29 @@ export const useCompleteOrder = () => {
     },
   });
 };
+export const useCancelOrderCourier = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.patch(`/api/orders/${id}/cancel-courier`);
+    },
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['orders', 'details', id] });
+      queryClient.invalidateQueries({ queryKey: ['orders', 'active'] });
+      queryClient.invalidateQueries({ queryKey: ['orders', 'available'] });
+    },
+  });
+};
+
+export const useCancelOrderClient = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.patch(`/api/orders/${id}/cancel-client`);
+    },
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['orders', 'details', id] });
+      queryClient.invalidateQueries({ queryKey: ['orders', 'my'] });
+    },
+  });
+};

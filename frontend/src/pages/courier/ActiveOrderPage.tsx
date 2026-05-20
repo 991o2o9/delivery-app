@@ -5,6 +5,7 @@ import {
   useOrderDetails,
   usePickupOrder,
   useStartTransitOrder,
+  useCancelOrderCourier,
 } from '../../entities/order/api/orderApi';
 import { OrderStatus } from '../../shared/api/types';
 import {
@@ -65,6 +66,16 @@ export const ActiveOrderPage = () => {
   const pickupMutation   = usePickupOrder();
   const transitMutation  = useStartTransitOrder();
   const completeMutation = useCompleteOrder();
+  const cancelMutation   = useCancelOrderCourier();
+
+  const handleCancel = async () => {
+    try {
+      await cancelMutation.mutateAsync(order.id);
+      navigate('/courier');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to cancel order.');
+    }
+  };
 
   /* ── Loading / Error states ── */
   if (isLoading)
@@ -281,7 +292,16 @@ export const ActiveOrderPage = () => {
           {/* Desktop action button */}
           <div className='sticky top-20'>
             <ActionButton config={config} handleAction={handleAction} />
-            <p className='text-center text-[10px] text-slate-400 font-medium mt-2 uppercase tracking-wider'>
+            {order.status === OrderStatus.ASSIGNED && (
+              <button 
+                onClick={handleCancel}
+                disabled={cancelMutation.isPending}
+                className='w-full mt-3 h-12 rounded-2xl font-black text-sm tracking-widest transition-all flex items-center justify-center text-red-500 border-2 border-red-50 hover:bg-red-50 active:scale-[0.98]'
+              >
+                {cancelMutation.isPending ? 'CANCELLING...' : 'CANCEL ORDER'}
+              </button>
+            )}
+            <p className='text-center text-[10px] text-slate-400 font-medium mt-3 uppercase tracking-wider'>
               Payout on delivery
             </p>
           </div>
@@ -289,8 +309,17 @@ export const ActiveOrderPage = () => {
       </div>
 
       {/* ── Mobile sticky action bar ── */}
-      <footer className='lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-slate-100 z-20'>
+      <footer className='lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-slate-100 z-20 flex flex-col gap-2'>
         <ActionButton config={config} handleAction={handleAction} />
+        {order.status === OrderStatus.ASSIGNED && (
+          <button 
+            onClick={handleCancel}
+            disabled={cancelMutation.isPending}
+            className='w-full h-12 rounded-2xl font-black text-sm tracking-widest transition-all flex items-center justify-center text-red-500 border-2 border-red-50 hover:bg-red-50 active:scale-[0.98]'
+          >
+            {cancelMutation.isPending ? 'CANCELLING...' : 'CANCEL ORDER'}
+          </button>
+        )}
       </footer>
     </div>
   );

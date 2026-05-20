@@ -77,7 +77,11 @@ public class OrderController {
     @GetMapping("/courier/active")
     @PreAuthorize("hasRole('COURIER')")
     public ResponseEntity<OrderResponseDto> getActiveOrder(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(orderService.getActiveCourierOrder(userDetails.getId()));
+        OrderResponseDto activeOrder = orderService.getActiveCourierOrder(userDetails.getId());
+        if (activeOrder == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(activeOrder);
     }
 
     @Operation(summary = "Update status to PICKED_UP", description = "Must be in ASSIGNED status")
@@ -109,5 +113,18 @@ public class OrderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(orderService.getCourierOrderHistory(userDetails.getId(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))));
+    }
+    @Operation(summary = "Cancel an order as a courier")
+    @PatchMapping("/{id}/cancel-courier")
+    @PreAuthorize("hasRole('COURIER')")
+    public ResponseEntity<OrderResponseDto> cancelOrderByCourier(@PathVariable UUID id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(orderService.cancelOrderByCourier(id, userDetails.getId()));
+    }
+
+    @Operation(summary = "Cancel an order as a client")
+    @PatchMapping("/{id}/cancel-client")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ResponseEntity<OrderResponseDto> cancelOrderByClient(@PathVariable UUID id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(orderService.cancelOrderByClient(id, userDetails.getId()));
     }
 }
