@@ -70,7 +70,7 @@ export const CouriersPage = () => {
                       Orders
                     </p>
                     <p className='font-black text-gray-800'>
-                      {courier.completedOrdersCount}
+                      {courier.totalOrders}
                     </p>
                   </div>
                 </div>

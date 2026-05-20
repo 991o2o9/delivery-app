@@ -5,7 +5,7 @@ import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { authService } from '../../features/auth/api/authService';
 import { useAuthStore } from '../../entities/user/model/store';
 import { UserRole } from '../../shared/api/types';
-import { useEffect } from 'react';
+
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -38,7 +38,7 @@ export const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      const response = await authService.login(data);
+      const response = await authService.login(data as any);
       setAuth(response);
       
       const role = response.role;

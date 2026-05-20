@@ -122,8 +122,4 @@ export const router = createBrowserRouter([
     path: '/',
     element: <LoginPage />, // Default route
   },
-], {
-  future: {
-    v7_startTransition: true,
-  },
-});
+]);

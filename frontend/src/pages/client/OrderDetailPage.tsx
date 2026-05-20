@@ -5,8 +5,8 @@ import {
 } from '@react-google-maps/api';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useOrderDetails, useCancelOrderClient } from '../../entities/order/api/orderApi';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useCancelOrderClient, useOrderDetails } from '../../entities/order/api/orderApi';
 import { OrderStatus } from '../../shared/api/types';
 import {
   cargoTypeLabelMap,
@@ -453,37 +453,7 @@ export const OrderDetailPage = () => {
                     Kyrgyzstan
                   </span>
                 </div>
-              </div>
-
-              <div className='bg-white rounded-2xl border border-gray-100 p-5 flex items-center justify-between gap-4'>
-                <div className='flex items-center gap-3'>
-                  <div className='w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center flex-shrink-0'>
-                    <svg
-                      width='16'
-                      height='16'
-                      viewBox='0 0 24 24'
-                      fill='none'
-                      stroke='#4338ca'
-                      strokeWidth='2'
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                    >
-                      <path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className='text-sm font-semibold text-gray-800'>
-                      Secure delivery
-                    </p>
-                    <p className='text-xs text-gray-400'>
-                      Protected by insurance policy
-                    </p>
-                  </div>
-                </div>
-                <button className='text-xs font-medium text-indigo-600 bg-indigo-50 px-3 py-2 rounded-xl border border-indigo-100 hover:bg-indigo-100 transition-colors whitespace-nowrap flex-shrink-0'>
-                  Support
-                </button>
-              </div>
+              </div>             
             </div>
           </div>
         </div>

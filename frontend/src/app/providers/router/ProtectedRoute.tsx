@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../../entities/user/model/store';
 import { UserRole } from '../../../shared/api/types';
@@ -16,7 +16,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && user && !allowedRoles.includes(user.role as UserRole)) {
     // Redirect to a specific dashboard based on role if access denied
     const dashboardMap: Record<UserRole, string> = {
       [UserRole.ADMIN]: '/admin',
@@ -24,7 +24,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
       [UserRole.CLIENT]: '/client',
     };
     
-    return <Navigate to={dashboardMap[user.role]} replace />;
+    return <Navigate to={dashboardMap[user.role as UserRole]} replace />;
   }
 
   return <>{children}</>;

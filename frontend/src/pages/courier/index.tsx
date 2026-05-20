@@ -42,9 +42,9 @@ export const CourierPage = () => {
             COURIER DASHBOARD
           </h1>
           <div className='flex items-center gap-4'>
-            {user?.name && (
+            {user?.email && (
               <span className='hidden sm:block text-xs font-bold text-gray-400 uppercase tracking-wider'>
-                {user.name}
+                {user.email}
               </span>
             )}
             <button

@@ -28,7 +28,7 @@ export const RegisterPage = () => {
   const onSubmit = async (data: RegisterFormValues) => {
     try {
       // Backend expects role, so we send ROLE_CLIENT by default
-      await authService.register({ ...data, role: UserRole.CLIENT });
+      await authService.register({ ...data, role: UserRole.CLIENT } as any);
       alert('Registration successful! Please login.');
       navigate('/login');
     } catch (error) {

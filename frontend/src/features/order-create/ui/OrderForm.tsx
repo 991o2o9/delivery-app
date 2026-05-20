@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
 import { useState } from 'react';
-import { CargoType, Urgency, PaymentMethod } from '../../../shared/api/types';
+import { CargoType, Urgency, PaymentMethod, OrderRequestDto } from '../../../shared/api/types';
 import { MapPicker } from '../../../shared/ui/MapPicker';
 import { useCreateOrder } from '../../../entities/order/api/orderApi';
 
@@ -138,7 +138,7 @@ export const OrderForm = ({ onSuccess, onCancel }: OrderFormProps) => {
 
   const onSubmit = async (data: OrderFormValues) => {
     try {
-      await createOrder.mutateAsync(data);
+      await createOrder.mutateAsync(data as OrderRequestDto);
       onSuccess();
     } catch (error) {
       console.error('Failed to create order:', error);
