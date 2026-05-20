@@ -243,7 +243,7 @@ Library: `spring-boot-starter-validation` (Hibernate Validator)
 | `getAvailableOrdersForCourier()` | OrderService | Fetches CREATED orders, sorts by Haversine distance from courier coordinates |
 | `calculateHaversineDistance()` | OrderService | Great-circle distance formula between two coordinate pairs |
 | `leaveReview()` | ReviewService | Persists review, recalculates courier weighted average rating |
-| `authenticateUser()` | AuthService | Validates credentials via AuthenticationManager, issues JWT token |
+| `login()` | AuthService | Validates credentials via AuthenticationManager, issues JWT token |
 | `getDistance()` | GoogleMapsService | Calls Distance Matrix API via RestTemplate, parses response |
 | `calculatePrice()` | PricingService | Formula: base rate × distance × weight coefficient × urgency multiplier |
 
