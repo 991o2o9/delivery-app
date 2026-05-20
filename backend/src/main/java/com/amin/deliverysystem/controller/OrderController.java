@@ -4,6 +4,7 @@ import com.amin.deliverysystem.config.security.UserDetailsImpl;
 import com.amin.deliverysystem.dto.AvailableOrderResponseDto;
 import com.amin.deliverysystem.dto.OrderRequestDto;
 import com.amin.deliverysystem.dto.OrderResponseDto;
+import com.amin.deliverysystem.dto.ReviewRequestDto;
 import com.amin.deliverysystem.model.enums.OrderStatus;
 import com.amin.deliverysystem.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -126,5 +127,15 @@ public class OrderController {
     @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<OrderResponseDto> cancelOrderByClient(@PathVariable UUID id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(orderService.cancelOrderByClient(id, userDetails.getId()));
+    }
+
+    @Operation(summary = "Leave a review for a delivered order")
+    @PostMapping("/{id}/review")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ResponseEntity<OrderResponseDto> leaveReview(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestBody ReviewRequestDto request) {
+        return ResponseEntity.ok(orderService.leaveReview(id, userDetails.getId(), request));
     }
 }

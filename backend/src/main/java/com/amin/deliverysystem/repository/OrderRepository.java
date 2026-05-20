@@ -35,8 +35,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     @Query("SELECT o.status, COUNT(o) FROM Order o GROUP BY o.status")
     List<Object[]> countOrdersByStatus();
     
-    @Query("SELECT COUNT(o) FROM Order o WHERE o.courier.id = :courierId AND o.status = 'DELIVERED'")
-    Long countCompletedOrdersByCourier(@Param("courierId") UUID courierId);
+    Long countByCourierIdAndStatus(UUID courierId, OrderStatus status);
 
     @Query(value = "SELECT AVG(EXTRACT(EPOCH FROM (h.changed_at - o.created_at)) / 60) " +
            "FROM orders o JOIN delivery_status_history h ON o.id = h.order_id " +

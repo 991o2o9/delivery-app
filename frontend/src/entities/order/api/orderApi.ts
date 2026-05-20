@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../../shared/api/base';
-import type { OrderRequestDto, OrderResponseDto, Page } from '../../../shared/api/types';
+import type { OrderRequestDto, OrderResponseDto, Page, ReviewRequest } from '../../../shared/api/types';
 
 export const useCreateOrder = () => {
   const queryClient = useQueryClient();
@@ -99,6 +99,20 @@ export const useCancelOrderClient = () => {
       await api.patch(`/api/orders/${id}/cancel-client`);
     },
     onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['orders', 'details', id] });
+      queryClient.invalidateQueries({ queryKey: ['orders', 'my'] });
+    },
+  });
+};
+
+export const useSubmitReview = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: ReviewRequest }) => {
+      const response = await api.post<OrderResponseDto>(`/api/orders/${id}/review`, data);
+      return response.data;
+    },
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['orders', 'details', id] });
       queryClient.invalidateQueries({ queryKey: ['orders', 'my'] });
     },

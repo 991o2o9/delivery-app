@@ -15,6 +15,9 @@ import com.amin.deliverysystem.model.User;
 import com.amin.deliverysystem.repository.DeliveryStatusHistoryRepository;
 import com.amin.deliverysystem.repository.OrderRepository;
 import com.amin.deliverysystem.repository.UserRepository;
+import com.amin.deliverysystem.repository.ReviewRepository;
+import com.amin.deliverysystem.model.Review;
+import com.amin.deliverysystem.dto.ReviewRequestDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -40,6 +43,7 @@ public class OrderService {
     private final DeliveryStatusHistoryRepository historyRepository;
     private final GoogleMapsService googleMapsService;
     private final PricingService pricingService;
+    private final ReviewRepository reviewRepository;
 
     private static final List<OrderStatus> ACTIVE_STATUSES = Arrays.asList(
             OrderStatus.ASSIGNED,
@@ -50,12 +54,14 @@ public class OrderService {
     public OrderService(OrderRepository orderRepository, UserRepository userRepository,
                         DeliveryStatusHistoryRepository historyRepository,
                         GoogleMapsService googleMapsService,
-                        PricingService pricingService) {
+                        PricingService pricingService,
+                        ReviewRepository reviewRepository) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.historyRepository = historyRepository;
         this.googleMapsService = googleMapsService;
         this.pricingService = pricingService;
+        this.reviewRepository = reviewRepository;
     }
 
     @Transactional
@@ -219,7 +225,9 @@ public class OrderService {
         }
 
         List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(order);
-        return OrderMapper.toDto(order, history);
+        OrderResponseDto dto = OrderMapper.toDto(order, history);
+        dto.setReviewed(reviewRepository.existsByOrderId(order.getId()));
+        return dto;
     }
 
     // Обычное чтение — без блокировки, findById достаточно
@@ -227,14 +235,18 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
         List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(order);
-        return OrderMapper.toDto(order, history);
+        OrderResponseDto dto = OrderMapper.toDto(order, history);
+        dto.setReviewed(reviewRepository.existsByOrderId(order.getId()));
+        return dto;
     }
 
     public Page<OrderResponseDto> getMyOrders(UUID clientId, Pageable pageable) {
         return orderRepository.findByClientId(clientId, pageable)
                 .map(order -> {
                     List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(order);
-                    return OrderMapper.toDto(order, history);
+                    OrderResponseDto dto = OrderMapper.toDto(order, history);
+                    dto.setReviewed(reviewRepository.existsByOrderId(order.getId()));
+                    return dto;
                 });
     }
 
@@ -245,7 +257,9 @@ public class OrderService {
                 pageable
         ).map(order -> {
             List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(order);
-            return OrderMapper.toDto(order, history);
+            OrderResponseDto dto = OrderMapper.toDto(order, history);
+            dto.setReviewed(reviewRepository.existsByOrderId(order.getId()));
+            return dto;
         });
     }
 
@@ -275,5 +289,55 @@ public class OrderService {
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    @Transactional
+    public OrderResponseDto leaveReview(UUID orderId, UUID clientId, ReviewRequestDto request) {
+        logger.info("Client {} leaving a review for order {}", clientId, orderId);
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        if (!order.getClient().getId().equals(clientId)) {
+            throw new AccessDeniedException("You are not the client for this order.");
+        }
+
+        if (order.getStatus() != OrderStatus.DELIVERED) {
+            throw new IllegalStateException("You can only review delivered orders.");
+        }
+
+        if (reviewRepository.existsByOrderId(orderId)) {
+            throw new IllegalStateException("You have already reviewed this order.");
+        }
+
+        User courier = order.getCourier();
+        if (courier == null) {
+            throw new IllegalStateException("This order has no courier to review.");
+        }
+
+        Review review = new Review();
+        review.setOrder(order);
+        review.setClient(order.getClient());
+        review.setCourier(courier);
+        review.setRating(request.getRating());
+        review.setComment(request.getComment());
+
+        reviewRepository.save(review);
+
+        // Update Courier rating
+        Double oldRating = courier.getRating() != null ? courier.getRating() : 0.0;
+        Integer oldReviewsCount = courier.getReviewsCount() != null ? courier.getReviewsCount() : 0;
+        
+        Double newAverage = ((oldRating * oldReviewsCount) + request.getRating()) / (oldReviewsCount + 1);
+        
+        courier.setRating(newAverage);
+        courier.setReviewsCount(oldReviewsCount + 1);
+        
+        userRepository.save(courier);
+
+        List<DeliveryStatusHistory> history = historyRepository.findByOrderOrderByChangedAtDesc(order);
+        OrderResponseDto dto = OrderMapper.toDto(order, history);
+        dto.setReviewed(true);
+        return dto;
     }
 }

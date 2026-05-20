@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../../shared/api/base';
-import type { DashboardStatsDto, OrderResponseDto, CourierSummaryDto, Page } from '../../../shared/api/types';
+import type { DashboardStatsDto, OrderResponseDto, CourierSummaryDto, Page, ReviewResponseDto } from '../../../shared/api/types';
 
 export const useAdminStats = () => {
   return useQuery({
@@ -43,5 +43,17 @@ export const useBlockCourier = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'couriers'] });
     },
+  });
+};
+
+export const useCourierReviews = (courierId: string | null) => {
+  return useQuery({
+    queryKey: ['admin', 'couriers', courierId, 'reviews'],
+    queryFn: async () => {
+      if (!courierId) return [];
+      const response = await api.get<ReviewResponseDto[]>(`/api/admin/couriers/${courierId}/reviews`);
+      return response.data;
+    },
+    enabled: !!courierId,
   });
 };

@@ -77,6 +77,21 @@ export interface OrderRequestDto {
   deliveryComment?: string;
 }
 
+export interface ReviewRequest {
+  rating: number;
+  comment?: string;
+}
+
+export type ReviewResponseDto = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  clientName: string;
+  clientEmail: string;
+  orderId: string;
+};
+
 export type DashboardStatsDto = {
   totalRevenue: number;
   totalOrders: number;
@@ -90,7 +105,7 @@ export type CourierSummaryDto = {
   firstName: string;
   lastName: string;
   rating: number;
-  totalOrders: number;
+  completedOrdersCount: number;
   isActive: boolean;
 };
 
@@ -129,6 +144,7 @@ export type OrderResponseDto = {
   createdAt: string;
   updatedAt: string;
   history: OrderHistoryDto[];
+  isReviewed?: boolean;
 };
 
 export type CourierApplicationDto = {

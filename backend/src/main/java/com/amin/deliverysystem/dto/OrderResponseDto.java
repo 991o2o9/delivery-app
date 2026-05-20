@@ -41,6 +41,7 @@ public class OrderResponseDto {
     private String deliveryComment;
     private Urgency urgency;
     private PaymentMethod paymentMethod;
+    private boolean isReviewed;
 
     // History
     private List<StatusHistoryDto> history;
@@ -246,5 +247,14 @@ public class OrderResponseDto {
 
     public void setHistory(List<StatusHistoryDto> history) {
         this.history = history;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("isReviewed")
+    public boolean isReviewed() {
+        return isReviewed;
+    }
+
+    public void setReviewed(boolean reviewed) {
+        isReviewed = reviewed;
     }
 }

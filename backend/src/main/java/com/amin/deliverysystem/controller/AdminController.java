@@ -4,6 +4,7 @@ import com.amin.deliverysystem.dto.AdminOrderResponseDto;
 import com.amin.deliverysystem.dto.CourierApplicationResponse;
 import com.amin.deliverysystem.dto.CourierSummaryDto;
 import com.amin.deliverysystem.dto.DashboardStatsDto;
+import com.amin.deliverysystem.dto.ReviewResponseDto;
 import com.amin.deliverysystem.service.AdminService;
 import com.amin.deliverysystem.service.StatisticsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -65,5 +66,11 @@ public class AdminController {
     public ResponseEntity<Void> toggleCourierBlock(@PathVariable UUID id) {
         adminService.toggleUserActiveStatus(id);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Get reviews for a specific courier")
+    @GetMapping("/couriers/{id}/reviews")
+    public ResponseEntity<List<ReviewResponseDto>> getCourierReviews(@PathVariable UUID id) {
+        return ResponseEntity.ok(adminService.getCourierReviews(id));
     }
 }

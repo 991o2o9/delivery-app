@@ -9,6 +9,8 @@ import com.amin.deliverysystem.model.*;
 import com.amin.deliverysystem.repository.CourierApplicationRepository;
 import com.amin.deliverysystem.repository.OrderRepository;
 import com.amin.deliverysystem.repository.UserRepository;
+import com.amin.deliverysystem.repository.ReviewRepository;
+import com.amin.deliverysystem.dto.ReviewResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,13 +27,16 @@ public class AdminService {
     private final CourierApplicationRepository applicationRepository;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
+    private final ReviewRepository reviewRepository;
 
     public AdminService(CourierApplicationRepository applicationRepository, 
                         UserRepository userRepository,
-                        OrderRepository orderRepository) {
+                        OrderRepository orderRepository,
+                        ReviewRepository reviewRepository) {
         this.applicationRepository = applicationRepository;
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     public List<CourierApplicationResponse> getPendingApplications() {
@@ -87,7 +92,7 @@ public class AdminService {
                     dto.setLastName(courier.getLastName());
                     dto.setRating(courier.getRating());
                     dto.setActive(courier.isActive());
-                    dto.setCompletedOrdersCount(orderRepository.countCompletedOrdersByCourier(courier.getId()));
+                    dto.setCompletedOrdersCount(orderRepository.countByCourierIdAndStatus(courier.getId(), com.amin.deliverysystem.model.enums.OrderStatus.DELIVERED));
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -99,5 +104,21 @@ public class AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         user.setActive(!user.isActive());
         userRepository.save(user);
+    }
+
+    public List<ReviewResponseDto> getCourierReviews(UUID courierId) {
+        return reviewRepository.findByCourierIdOrderByCreatedAtDesc(courierId).stream()
+                .map(review -> {
+                    ReviewResponseDto dto = new ReviewResponseDto();
+                    dto.setId(review.getId());
+                    dto.setRating(review.getRating());
+                    dto.setComment(review.getComment());
+                    dto.setCreatedAt(review.getCreatedAt());
+                    dto.setClientName(review.getClient().getFirstName() + " " + review.getClient().getLastName());
+                    dto.setClientEmail(review.getClient().getEmail());
+                    dto.setOrderId(review.getOrder().getId());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }

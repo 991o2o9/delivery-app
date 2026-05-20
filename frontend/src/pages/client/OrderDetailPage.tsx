@@ -6,7 +6,7 @@ import {
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useCancelOrderClient, useOrderDetails } from '../../entities/order/api/orderApi';
+import { useCancelOrderClient, useOrderDetails, useSubmitReview } from '../../entities/order/api/orderApi';
 import { OrderStatus } from '../../shared/api/types';
 import {
   cargoTypeLabelMap,
@@ -74,6 +74,11 @@ export const OrderDetailPage = () => {
   const navigate = useNavigate();
   const { data: order, isLoading, isError } = useOrderDetails(id);
   const cancelMutation = useCancelOrderClient();
+  const submitReviewMutation = useSubmitReview();
+
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState('');
 
   const handleCancel = async () => {
     try {
@@ -81,6 +86,22 @@ export const OrderDetailPage = () => {
       navigate('/client');
     } catch (error: any) {
       alert(error.response?.data?.message || 'Failed to cancel order.');
+    }
+  };
+
+  const handleReviewSubmit = async () => {
+    if (rating === 0) {
+      alert('Please select a rating before submitting.');
+      return;
+    }
+    try {
+      await submitReviewMutation.mutateAsync({
+        id: id!,
+        data: { rating, comment },
+      });
+      alert('Review submitted successfully!');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to submit review.');
     }
   };
   const [directionsResponse, setDirectionsResponse] =
@@ -238,6 +259,62 @@ export const OrderDetailPage = () => {
                     </p>
                   </div>
                 </div>
+
+                {/* Review Section */}
+                {order.status === OrderStatus.DELIVERED && (
+                  <div className='mt-6 pt-5 border-t border-gray-50'>
+                    {!order.isReviewed ? (
+                      <div className='space-y-4'>
+                        <h3 className='text-sm font-bold text-gray-900'>Rate your courier</h3>
+                        <div className='flex gap-2'>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              onClick={() => setRating(star)}
+                              onMouseEnter={() => setHoverRating(star)}
+                              onMouseLeave={() => setHoverRating(0)}
+                              className='focus:outline-none transition-transform hover:scale-110'
+                            >
+                              <svg
+                                width='28'
+                                height='28'
+                                viewBox='0 0 24 24'
+                                fill={(hoverRating || rating) >= star ? '#fbbf24' : 'none'}
+                                stroke={(hoverRating || rating) >= star ? '#fbbf24' : '#d1d5db'}
+                                strokeWidth='2'
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                              >
+                                <polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' />
+                              </svg>
+                            </button>
+                          ))}
+                        </div>
+                        <textarea
+                          placeholder='Leave a comment (optional)...'
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                          className='w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-24'
+                        />
+                        <button
+                          onClick={handleReviewSubmit}
+                          disabled={submitReviewMutation.isPending || rating === 0}
+                          className='w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                        >
+                          {submitReviewMutation.isPending ? 'Submitting...' : 'Submit Review'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className='flex items-center gap-3 bg-green-50 text-green-700 px-4 py-3 rounded-xl'>
+                        <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                          <path d='M22 11.08V12a10 10 0 1 1-5.93-9.14' />
+                          <polyline points='22 4 12 14.01 9 11.01' />
+                        </svg>
+                        <p className='text-sm font-medium'>You have already reviewed this courier.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
