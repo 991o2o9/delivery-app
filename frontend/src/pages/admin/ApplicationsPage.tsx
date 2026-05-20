@@ -1,4 +1,4 @@
-import { usePendingApplications, useApproveApplication } from '../../entities/application/api/applicationApi';
+import { usePendingApplications, useApproveApplication, useRejectApplication } from '../../entities/application/api/applicationApi';
 import { AdminLayout } from '../../widgets/admin-layout/ui/AdminLayout';
 
 export const ApplicationsPage = () => {
@@ -11,6 +11,17 @@ export const ApplicationsPage = () => {
       alert('Application approved successfully!');
     } catch (error) {
       alert('Failed to approve application');
+    }
+  };
+
+  const rejectMutation = useRejectApplication();
+
+  const handleReject = async (id: string) => {
+    try {
+      await rejectMutation.mutateAsync(id);
+      alert('Application rejected successfully!');
+    } catch (error) {
+      alert('Failed to reject application');
     }
   };
 
@@ -43,13 +54,22 @@ export const ApplicationsPage = () => {
                 </p>
               </div>
 
-              <button
-                onClick={() => handleApprove(app.id)}
-                disabled={approveMutation.isPending}
-                className="w-full md:w-auto px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-green-100 transition-all disabled:bg-gray-200 text-xs"
-              >
-                {approveMutation.isPending ? 'Processing...' : 'Approve Application'}
-              </button>
+              <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                <button
+                  onClick={() => handleApprove(app.id)}
+                  disabled={approveMutation.isPending || rejectMutation.isPending}
+                  className="w-full md:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-green-100 transition-all disabled:bg-gray-200 text-xs"
+                >
+                  {approveMutation.isPending ? 'Processing...' : 'Approve'}
+                </button>
+                <button
+                  onClick={() => handleReject(app.id)}
+                  disabled={approveMutation.isPending || rejectMutation.isPending}
+                  className="w-full md:w-auto px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-red-100 transition-all disabled:bg-gray-200 text-xs"
+                >
+                  {rejectMutation.isPending ? 'Processing...' : 'Reject'}
+                </button>
+              </div>
             </div>
           ))}
         </div>

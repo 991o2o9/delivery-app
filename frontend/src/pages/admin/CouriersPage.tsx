@@ -15,16 +15,13 @@ export const CouriersPage = () => {
   const { data: reviews, isLoading: reviewsLoading } = useCourierReviews(selectedCourierId);
 
   const handleBlockToggle = async (id: string, currentIsActive: boolean) => {
-    const action = currentIsActive ? 'block' : 'unblock';
-    if (confirm(`Are you sure you want to ${action} this courier?`)) {
-      try {
-        await blockMutation.mutateAsync(id);
-        alert(
-          `Courier ${currentIsActive ? 'blocked' : 'unblocked'} successfully!`,
-        );
-      } catch (error) {
-        alert('Action failed');
-      }
+    try {
+      await blockMutation.mutateAsync(id);
+      alert(
+        `Courier ${currentIsActive ? 'blocked' : 'unblocked'} successfully!`,
+      );
+    } catch (error) {
+      alert('Action failed');
     }
   };
 
@@ -51,7 +48,7 @@ export const CouriersPage = () => {
                       {courier.lastName[0]}
                     </div>
                     <div
-                      className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white ${courier.isActive ? 'bg-green-500' : 'bg-red-500'}`}
+                      className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white ${courier.active ? 'bg-green-500' : 'bg-red-500'}`}
                     />
                   </div>
                   <div>
@@ -90,17 +87,17 @@ export const CouriersPage = () => {
                   View Reviews
                 </button>
                 <button
-                  onClick={() => handleBlockToggle(courier.id, courier.isActive)}
+                  onClick={() => handleBlockToggle(courier.id, courier.active)}
                   disabled={blockMutation.isPending}
                   className={`w-1/2 py-3 rounded-xl text-sm font-bold transition-all ${
-                    courier.isActive
+                    courier.active
                       ? 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white'
                       : 'bg-green-50 text-green-600 hover:bg-green-600 hover:text-white'
                   }`}
                 >
                   {blockMutation.isPending
                     ? 'Working...'
-                    : courier.isActive
+                    : courier.active
                       ? 'Block'
                       : 'Unblock'}
                 </button>

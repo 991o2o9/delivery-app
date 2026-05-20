@@ -106,7 +106,7 @@ export type CourierSummaryDto = {
   lastName: string;
   rating: number;
   completedOrdersCount: number;
-  isActive: boolean;
+  active: boolean;
 };
 
 export type OrderHistoryDto = {

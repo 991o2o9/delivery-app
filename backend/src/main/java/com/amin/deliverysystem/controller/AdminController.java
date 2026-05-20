@@ -43,6 +43,12 @@ public class AdminController {
         return ResponseEntity.ok(adminService.approveApplication(id));
     }
 
+    @Operation(summary = "Reject a courier application", description = "Changes application status to REJECTED")
+    @PostMapping("/applications/{id}/reject")
+    public ResponseEntity<CourierApplicationResponse> rejectApplication(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.rejectApplication(id));
+    }
+
     @Operation(summary = "Get system-wide summary for dashboard")
     @GetMapping("/dashboard/summary")
     public ResponseEntity<DashboardStatsDto> getDashboardSummary() {

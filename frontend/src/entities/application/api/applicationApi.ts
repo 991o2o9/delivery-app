@@ -32,3 +32,15 @@ export const useApproveApplication = () => {
     },
   });
 };
+
+export const useRejectApplication = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.post(`/api/admin/applications/${id}/reject`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'applications'] });
+    },
+  });
+};

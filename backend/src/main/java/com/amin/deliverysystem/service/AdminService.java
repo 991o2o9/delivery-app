@@ -63,6 +63,19 @@ public class AdminService {
         return ApplicationMapper.toDto(applicationRepository.save(application));
     }
 
+    @Transactional
+    public CourierApplicationResponse rejectApplication(Long appId) {
+        CourierApplication application = applicationRepository.findById(appId)
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found with id: " + appId));
+
+        if (application.getStatus() != ApplicationStatus.PENDING) {
+            throw new RuntimeException("Application is already processed");
+        }
+
+        application.setStatus(ApplicationStatus.REJECTED);
+        return ApplicationMapper.toDto(applicationRepository.save(application));
+    }
+
     public Page<AdminOrderResponseDto> getAllOrders(Pageable pageable) {
         return orderRepository.findAll(pageable).map(order -> {
             AdminOrderResponseDto dto = new AdminOrderResponseDto();
